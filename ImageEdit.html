@@ -1,0 +1,448 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Editor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 24px;
+      color: #222;
+    }
+
+    .card {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #1f3d6d;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .controls div {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input, select, button {
+      padding: 10px 12px;
+      border: 1px solid #cfd8e3;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .preview-box {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 16px;
+      background: #fafafa;
+      text-align: center;
+    }
+
+    canvas {
+      max-width: 100%;
+      border-radius: 8px;
+      background: #fff;
+      cursor: grab;
+    }
+
+    .hint {
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .watermark-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin: 16px 0 12px;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    .watermark-controls label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .watermark-controls input[type="range"] {
+      width: 140px;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Image Crop & Download</h2>
+
+    <div class="controls">
+      <div>
+        <label for="imageUpload">Upload Image</label>
+        <input type="file" id="imageUpload" accept="image/*" />
+      </div>
+
+      <div>
+        <label for="cropType">Crop Option</label>
+        <select id="cropType">
+          <option value="original">Original</option>
+          <option value="landscape">Landscape (4:3)</option>
+          <option value="portrait">Portrait (3:4)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="nameInput">Name</label>
+        <input type="text" id="nameInput" placeholder="Enter name" />
+      </div>
+
+      <div>
+        <label for="priceInput">Price</label>
+        <input type="text" id="priceInput" placeholder="Enter price" />
+      </div>
+
+      <div>
+        <label>&nbsp;</label>
+        <button type="button" id="downloadBtn">Download Image</button>
+      </div>
+    </div>
+
+    <div class="watermark-controls">
+      <strong>Watermark</strong>
+      <label><input type="radio" name="watermarkType" value="logo" checked /> Logo dark</label>
+      <label><input type="radio" name="watermarkType" value="logoWhite" /> Logo light</label>
+      <label><input type="radio" name="watermarkType" value="text" /> PebbleNest Text</label>
+      <label>Opacity <input type="range" id="watermarkOpacity" min="0" max="100" value="60" /></label>
+    </div>
+
+    <div class="preview-box">
+      <canvas id="previewCanvas"></canvas>
+      <div class="hint">Choose an image, select a crop type, enter name and price, then download.</div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+    $(function () {
+      const imageUpload = $('#imageUpload');
+      const cropType = $('#cropType');
+      const nameInput = $('#nameInput');
+      const priceInput = $('#priceInput');
+      const downloadBtn = $('#downloadBtn');
+      const previewCanvas = $('#previewCanvas')[0];
+      const ctx = previewCanvas.getContext('2d');
+      const watermarkTypeInputs = $('input[name="watermarkType"]');
+      const watermarkOpacity = $('#watermarkOpacity');
+      let currentImage = null;
+      let watermarkImages = { logo: null, logoWhite: null };
+      let offsetX = 0;
+      let offsetY = 0;
+      let isDragging = false;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let dragStartOffsetX = 0;
+      let dragStartOffsetY = 0;
+
+      previewCanvas.addEventListener('mousedown', handleMouseDown);
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+
+      loadWatermarkImages();
+
+      imageUpload.on('change', function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const img = new Image();
+          img.onload = function () {
+            currentImage = img;
+            resetOffset();
+            renderPreview();
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      cropType.on('change', function () {
+        resetOffset();
+        renderPreview();
+      });
+      watermarkTypeInputs.on('change', renderPreview);
+      watermarkOpacity.on('input', renderPreview);
+      nameInput.on('input', renderPreview);
+      priceInput.on('input', renderPreview);
+
+      function renderPreview() {
+        if (!currentImage) return;
+
+        const canvasWidth = 900;
+        const canvasHeight = 900;
+        const ratio = getTargetRatio(cropType.val());
+        const frame = getFrameBounds(canvasWidth, canvasHeight, ratio);
+        const scale = Math.max(frame.width / currentImage.naturalWidth, frame.height / currentImage.naturalHeight);
+        const drawWidth = currentImage.naturalWidth * scale;
+        const drawHeight = currentImage.naturalHeight * scale;
+        const availableX = frame.width - drawWidth;
+        const availableY = frame.height - drawHeight;
+
+        previewCanvas.width = canvasWidth;
+        previewCanvas.height = canvasHeight;
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        offsetX = clamp(offsetX, availableX, 0);
+        offsetY = clamp(offsetY, availableY, 0);
+
+        ctx.drawImage(currentImage, frame.x + offsetX, frame.y + offsetY, drawWidth, drawHeight);
+
+        ctx.save();
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 6]);
+        ctx.strokeRect(frame.x, frame.y, frame.width, frame.height);
+        ctx.restore();
+
+        drawWatermark(ctx, frame);
+        drawTextOverlay(ctx, canvasWidth, canvasHeight);
+      }
+
+      function getTargetRatio(mode) {
+        if (mode === 'portrait') return 3 / 4;
+        if (mode === 'landscape') return 4 / 3;
+        return currentImage ? currentImage.naturalWidth / currentImage.naturalHeight : 1;
+      }
+
+      function getFrameBounds(width, height, ratio) {
+        let frameWidth = width * 0.82;
+        let frameHeight = frameWidth / ratio;
+
+        if (frameHeight > height * 0.82) {
+          frameHeight = height * 0.82;
+          frameWidth = frameHeight * ratio;
+        }
+
+        return {
+          x: (width - frameWidth) / 2,
+          y: (height - frameHeight) / 2,
+          width: frameWidth,
+          height: frameHeight
+        };
+      }
+
+      function resetOffset() {
+        if (!currentImage) return;
+        const ratio = getTargetRatio(cropType.val());
+        const frame = getFrameBounds(900, 900, ratio);
+        const scale = Math.max(frame.width / currentImage.naturalWidth, frame.height / currentImage.naturalHeight);
+        const drawWidth = currentImage.naturalWidth * scale;
+        const drawHeight = currentImage.naturalHeight * scale;
+
+        offsetX = (frame.width - drawWidth) / 2;
+        offsetY = (frame.height - drawHeight) / 2;
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function loadWatermarkImages() {
+        const logo = new Image();
+        logo.crossOrigin = 'anonymous';
+        logo.onload = function () {
+          watermarkImages.logo = logo;
+          renderPreview();
+        };
+        logo.src = 'https://raw.githubusercontent.com/hiranjose07-cloud/ImgEdit/refs/heads/main/PebbleNest-logo1.png';
+
+        const logoWhite = new Image();
+        logoWhite.crossOrigin = 'anonymous';
+        logoWhite.onload = function () {
+          watermarkImages.logoWhite = logoWhite;
+          renderPreview();
+        };
+        logoWhite.src = 'https://raw.githubusercontent.com/hiranjose07-cloud/ImgEdit/refs/heads/main/PebbleNest-logo2.png';
+      }
+
+      function drawWatermark(context, frame) {
+        const selectedType = $('input[name="watermarkType"]:checked').val() || 'logo';
+        const opacity = parseInt(watermarkOpacity.val(), 10) / 100;
+
+        if (selectedType === 'text') {
+          context.save();
+          context.globalAlpha = opacity;
+          context.font = 'bold 28px Arial';
+          context.fillStyle = 'rgba(255,255,255,0.95)';
+          context.textAlign = 'right';
+          context.fillText('PebbleNest', frame.x + frame.width - 12, frame.y + frame.height - 12);
+          context.restore();
+          return;
+        }
+
+        const watermarkImg = selectedType === 'logoWhite' ? watermarkImages.logoWhite : watermarkImages.logo;
+        if (!watermarkImg) return;
+
+        const targetHeight = 60;
+        const aspectRatio = watermarkImg.width / watermarkImg.height;
+        const targetWidth = targetHeight * aspectRatio;
+        const x = frame.x + frame.width - targetWidth - 12;
+        const y = frame.y + frame.height - targetHeight - 12;
+
+        context.save();
+        context.globalAlpha = opacity;
+        context.drawImage(watermarkImg, x, y, targetWidth, targetHeight);
+        context.restore();
+      }
+
+      function drawTextOverlay(context, width, height) {
+        const nameText = nameInput.val().trim() || 'Name';
+        const priceValue = priceInput.val().trim() || 'Price';
+        const priceText = `₹ ${priceValue}`;
+
+        context.save();
+        context.fillStyle = 'rgba(255,255,255,0.95)';
+        context.fillRect(0, height - 110, width, 110);
+
+        context.font = 'bold 40px Arial';
+        context.fillStyle = '#111';
+        context.textAlign = 'left';
+        context.fillText(nameText, 30, height - 55);
+
+        context.font = '32px Arial';
+        context.fillStyle = '#444';
+        context.fillText(priceText, 30, height - 18);
+        context.restore();
+      }
+
+      function handleMouseDown(event) {
+        if (!currentImage) return;
+        isDragging = true;
+        dragStartX = event.clientX;
+        dragStartY = event.clientY;
+        dragStartOffsetX = offsetX;
+        dragStartOffsetY = offsetY;
+        previewCanvas.style.cursor = 'grabbing';
+      }
+
+      function handleMouseMove(event) {
+        if (!isDragging || !currentImage) return;
+        offsetX = dragStartOffsetX + (event.clientX - dragStartX);
+        offsetY = dragStartOffsetY + (event.clientY - dragStartY);
+        renderPreview();
+      }
+
+      function handleMouseUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        previewCanvas.style.cursor = 'grab';
+      }
+
+      downloadBtn.on('click', function () {
+        if (!currentImage) {
+          alert('Please upload an image first.');
+          return;
+        }
+
+        const mode = cropType.val();
+        const targetRatio = getTargetRatio(mode);
+        const exportWidth = 1200;
+        const exportHeight = Math.round(exportWidth / targetRatio);
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = exportWidth;
+        exportCanvas.height = exportHeight;
+        const exportCtx = exportCanvas.getContext('2d');
+
+        const previewFrame = getFrameBounds(900, 900, targetRatio);
+        const previewScale = Math.max(previewFrame.width / currentImage.naturalWidth, previewFrame.height / currentImage.naturalHeight);
+        const sourceX = Math.max(0, -offsetX / previewScale);
+        const sourceY = Math.max(0, -offsetY / previewScale);
+        const sourceWidth = Math.min(currentImage.naturalWidth, previewFrame.width / previewScale);
+        const sourceHeight = Math.min(currentImage.naturalHeight, previewFrame.height / previewScale);
+
+        exportCtx.drawImage(
+          currentImage,
+          sourceX,
+          sourceY,
+          sourceWidth,
+          sourceHeight,
+          0,
+          0,
+          exportWidth,
+          exportHeight
+        );
+
+        const nameText = nameInput.val().trim() || 'Name';
+        const priceValue = priceInput.val().trim() || 'Price';
+        const priceText = `₹ ${priceValue}`;
+
+        drawWatermark(exportCtx, {
+          x: 0,
+          y: 0,
+          width: exportWidth,
+          height: exportHeight
+        });
+        drawTextOverlay(exportCtx, exportWidth, exportHeight);
+
+        exportCanvas.toBlob(function (blob) {
+          if (!blob) {
+            alert('Unable to create the image file.');
+            return;
+          }
+
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${nameText || 'image'}_${priceText || 'price'}.png`;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(function () {
+            URL.revokeObjectURL(url);
+          }, 1000);
+        }, 'image/png');
+      });
+    });
+  </script>
+</body>
+</html>
