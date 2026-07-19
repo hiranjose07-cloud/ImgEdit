@@ -1112,8 +1112,8 @@
         const baseTitleFontSize = 65;
         const priceFontSize = 50;
         const suffixFontSize = 50;
-        const separatorGap = 0;
-        const priceGap = 10;
+        const separatorGap = 8;
+        const priceGap = 7;
         const maxTitleWidth = width - padding * 2;
 
         const titleFontSize = adjustFontToFit(context, resolvedName, maxTitleWidth, baseTitleFontSize, 26, 'bold', 'Arial');
@@ -1133,17 +1133,8 @@
         const titleCenter = top + titleFontSize / 2;
         context.fillText(resolvedName, width / 2, titleCenter);
 
-        // Draw separator line below the title
-        const sepY = top + titleFontSize + Math.round(separatorGap / 2);
-        context.strokeStyle = '#d1d5db';
-        context.lineWidth = 1;
-        context.beginPath();
-        context.moveTo(padding, sepY);
-        context.lineTo(width - padding, sepY);
-        context.stroke();
-
-        // Draw price and suffix centered as one group below separator
-        const priceCenter = top + titleFontSize + separatorGap + priceGap + priceFontSize / 2;
+        // Draw price and suffix centered below the title
+        const priceCenter = top + titleFontSize + priceGap + priceFontSize / 2;
         context.font = `${priceFontSize}px Arial`;
         const priceMetrics = context.measureText(priceText);
 
