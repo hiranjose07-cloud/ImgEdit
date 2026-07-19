@@ -910,7 +910,7 @@
           const exportCanvas = document.createElement('canvas');
           exportCanvas.width = exportWidth;
           const imageHeight = Math.round(exportWidth / targetRatio);
-          const footerHeight = 170;
+          const footerHeight = 220;
           exportCanvas.height = imageHeight + footerHeight;
           const exportCtx = exportCanvas.getContext('2d');
 
@@ -1113,7 +1113,7 @@
         const priceFontSize = 50;
         const suffixFontSize = 50;
         const separatorGap = 8;
-        const priceGap = 7;
+        const priceGap = 15;
         const maxTitleWidth = width - padding * 2;
 
         const titleFontSize = adjustFontToFit(context, resolvedName, maxTitleWidth, baseTitleFontSize, 26, 'bold', 'Arial');
@@ -1346,7 +1346,7 @@
         const targetRatio = getTargetRatio(mode);
         const exportWidth = 1200;
         const imageHeight = Math.round(exportWidth / targetRatio);
-        const footerHeight = 170;
+        const footerHeight = 220;
         const exportCanvas = document.createElement('canvas');
         exportCanvas.width = exportWidth;
         exportCanvas.height = imageHeight + footerHeight;
