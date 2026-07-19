@@ -69,7 +69,25 @@
       border-radius: 12px;
       padding: 16px;
       background: #fafafa;
-      text-align: center;
+      text-align: left;
+    }
+
+    .preview-inner {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .preview-controls {
+      display: grid;
+      gap: 14px;
+    }
+
+    .canvas-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .preview-actions {
@@ -449,14 +467,47 @@
     </div>
 
     <div class="preview-box">
-      <canvas id="previewCanvas"></canvas>
-      <div class="hint">Choose an image, select a crop type, enter name and price, then save or download.</div>
-      <div class="preview-actions">
-        <button type="button" id="saveBtn">Save Image</button>
-        <button type="button" id="downloadBtn">Download PDF</button>
-      </div>
-    </div>
+        <div class="preview-inner">
+          <div class="preview-controls">
+            <div class="watermark-controls">
+              <label>
+                <input type="radio" name="watermarkType" value="logo" checked />
+                Logo watermark
+              </label>
+              <label>
+                <input type="radio" name="watermarkType" value="logoWhite" />
+                White watermark
+              </label>
+              <label>
+                <input type="radio" name="watermarkType" value="text" />
+                PebbleNest
+              </label>
+              <label for="watermarkOpacity">
+                Opacity
+                <input type="range" id="watermarkOpacity" min="10" max="100" step="5" value="60" />
+              </label>
+            </div>
 
+            <div class="zoom-controls">
+              <button type="button" id="zoomOutBtn">-</button>
+              <label for="zoomRange">Zoom</label>
+              <input type="range" id="zoomRange" min="0.8" max="2.5" step="0.1" value="1" />
+              <button type="button" id="zoomInBtn">+</button>
+            </div>
+
+            <div class="hint">Choose an image, select a crop type, enter name and price, then save or download.</div>
+          </div>
+
+          <div class="canvas-wrapper">
+            <canvas id="previewCanvas"></canvas>
+          </div>
+        </div>
+
+        <div class="preview-actions">
+          <button type="button" id="saveBtn">Save Image</button>
+          <button type="button" id="downloadBtn">Download PDF</button>
+        </div>
+      </div>
     <div class="gallery-section">
       <h3>Saved Images</h3>
       <div class="saved-gallery" id="savedGallery"></div>
@@ -1340,7 +1391,7 @@
           pdf.setFillColor(37, 99, 235);
           pdf.roundedRect(margin, footerY, pageWidth - margin * 2, footerHeight, 8, 8, 'F');
 
-          pdf.setFontSize(12);
+          pdf.setFontSize(18);
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(255, 255, 255);
           pdf.text(footerText, pageWidth / 2, footerY + footerHeight / 2 + 4, { align: 'center' });
@@ -1412,7 +1463,7 @@
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(0, 0, 0);
 
-          const iconHeight = 20;
+          const iconHeight = 25;
           const iconWidth = rupeeIconImage ? (rupeeIconImage.width / rupeeIconImage.height) * iconHeight : 0;
           const rupeeValueText = priceValue.toString();
           const rupeeValueWidth = pdf.getTextWidth(rupeeValueText);
@@ -1434,7 +1485,7 @@
           pdf.text(rupeeValueText, priceX, priceY);
           priceX += rupeeValueWidth + 6;
 
-          pdf.setFontSize(12);
+          pdf.setFontSize(18);
           pdf.setFont('helvetica', 'normal');
           pdf.setTextColor(113, 128, 150);
           pdf.text(suffixText, priceX, priceY);
