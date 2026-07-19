@@ -69,7 +69,25 @@
       border-radius: 12px;
       padding: 16px;
       background: #fafafa;
-      text-align: center;
+      text-align: left;
+    }
+
+    .preview-inner {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .preview-controls {
+      display: grid;
+      gap: 14px;
+    }
+
+    .canvas-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .preview-actions {
@@ -244,14 +262,14 @@
 
     .saved-card .saved-title {
       margin: 0;
-      font-size: 16px;
+      font-size: 20px;
       font-weight: 700;
       color: #111827;
     }
 
     .saved-card .saved-price {
       margin: 0;
-      font-size: 14px;
+      font-size: 20px;
       color: #2563eb;
       font-weight: 700;
     }
@@ -374,6 +392,14 @@
         height: 140px;
       }
 
+      .saved-card .saved-title {
+        font-size: 27px;
+      }
+
+      .saved-card .saved-price {
+        font-size: 25px;
+      }
+
       .controls div {
         width: 100%;
       }
@@ -436,19 +462,60 @@
     </div>
 
     <div class="gallery-section">
+      <h3>Stock Images (Folder)</h3>
+      <div class="image-list" id="stockGallery"></div>
+      <div style="margin-top:10px; text-align:right;">
+        <button type="button" id="stockDownloadBtn">Download Stock PDF</button>
+      </div>
+    </div>
+
+    <div class="gallery-section">
       <h3>Uploaded Images</h3>
       <div class="image-list" id="imageList"></div>
     </div>
 
     <div class="preview-box">
-      <canvas id="previewCanvas"></canvas>
-      <div class="hint">Choose an image, select a crop type, enter name and price, then save or download.</div>
-      <div class="preview-actions">
-        <button type="button" id="saveBtn">Save Image</button>
-        <button type="button" id="downloadBtn">Download PDF</button>
-      </div>
-    </div>
+        <div class="preview-inner">
+          <div class="preview-controls">
+            <div class="watermark-controls">
+              <label>
+                <input type="radio" name="watermarkType" value="logo" checked />
+                Logo watermark
+              </label>
+              <label>
+                <input type="radio" name="watermarkType" value="logoWhite" />
+                White watermark
+              </label>
+              <label>
+                <input type="radio" name="watermarkType" value="text" />
+                PebbleNest
+              </label>
+              <label for="watermarkOpacity">
+                Opacity
+                <input type="range" id="watermarkOpacity" min="10" max="100" step="5" value="60" />
+              </label>
+            </div>
 
+            <div class="zoom-controls">
+              <button type="button" id="zoomOutBtn">-</button>
+              <label for="zoomRange">Zoom</label>
+              <input type="range" id="zoomRange" min="0.8" max="2.5" step="0.1" value="1" />
+              <button type="button" id="zoomInBtn">+</button>
+            </div>
+
+            <div class="hint">Choose an image, select a crop type, enter name and price, then save or download.</div>
+          </div>
+
+          <div class="canvas-wrapper">
+            <canvas id="previewCanvas"></canvas>
+          </div>
+        </div>
+
+        <div class="preview-actions">
+          <button type="button" id="saveBtn">Save Image</button>
+          <button type="button" id="downloadBtn">Download PDF</button>
+        </div>
+      </div>
     <div class="gallery-section">
       <h3>Saved Images</h3>
       <div class="saved-gallery" id="savedGallery"></div>
@@ -473,11 +540,14 @@
       const zoomOutBtn = $('#zoomOutBtn');
       const saveBtn = $('#saveBtn');
       const imageList = $('#imageList');
+      const stockGalleryEl = $('#stockGallery');
       const savedGallery = $('#savedGallery');
+      let stockImages = [];
       const { jsPDF } = window.jspdf;
       let currentImage = null;
       let selectedImageId = null;
-      let images = [];
+      let uploadedImages = [];
+      let savedImages = [];
       let watermarkImages = { logo: null, logoWhite: null };
       let rupeeIconImage = null;
       let coverImage = null;
@@ -505,6 +575,8 @@
       loadWatermarkImages();
       loadRupeeIcon();
       loadCoverImage();
+      // Load stock images from a local folder named 'images' with filenames like item1.jpg, item2.jpg...
+      loadStockImages('./images', 'item', 20).then(() => renderStockGallery());
       loadFromStorage();
 
       imageUpload.on('change', function (e) {
@@ -535,7 +607,7 @@
             const img = new Image();
             img.onload = function () {
               item.image = img;
-              images.push(item);
+              uploadedImages.push(item);
               renderImageList();
               if (!selectedImageId) {
                 selectImageById(item.id);
@@ -547,6 +619,12 @@
           reader.readAsDataURL(file);
         });
       });
+
+      // PDF source selector: choose between saved images or stock images
+      const pdfSourceSelect = $('<select id="pdfSource">')
+        .append($('<option>').val('saved').text('Saved Images'))
+        .append($('<option>').val('stock').text('Stock Images'));
+      $(".controls").append($('<div>').append($('<label>').attr('for', 'pdfSource').text('PDF Source'), pdfSourceSelect));
 
       cropType.on('change', function () {
         resetOffset();
@@ -568,6 +646,13 @@
       });
       saveBtn.on('click', function () {
         saveCurrentImage();
+        const selectedItem = getSelectedImage();
+        if (!selectedItem) return;
+        const savedId = `${selectedItem.id}-saved`;
+        const savedItem = savedImages.find((it) => it.id === savedId);
+        if (savedItem) {
+          downloadSavedImage(savedItem);
+        }
       });
       zoomInBtn.on('click', function () {
         zoomLevel = clamp(Number((zoomLevel + 0.1).toFixed(1)), 0.8, 2.5);
@@ -731,6 +816,112 @@
         });
       }
 
+      // Load sequential stock images from a folder until an image is missing (stop on first missing file)
+      async function loadStockImages(folder = './images', prefix = 'item', maxCount = 50) {
+        stockImages = [];
+        for (let i = 1; i <= maxCount; i++) {
+          const src = `${folder}/${prefix}${i}.jpg`;
+          try {
+            const img = await createImage(src);
+            const id = `stock-${i}`;
+            stockImages.push({ id, src, image: img, fileName: `${prefix}${i}.jpg`, name: '', price: '' });
+          } catch (err) {
+            // Skip missing files instead of stopping on the first missing one
+            continue;
+          }
+        }
+      }
+
+      function renderStockGallery() {
+        stockGalleryEl.empty();
+        stockImages.forEach((item) => {
+          const card = $('<div>').addClass('saved-card').attr('draggable', true).data('stock-id', item.id);
+          const thumb = $('<img>').attr('src', item.src).attr('alt', item.fileName || 'Stock image');
+          const body = $('<div>').addClass('saved-body');
+          const title = $('<p>').addClass('saved-title').text(item.fileName || 'Stock Image');
+          const meta = $('<p>').addClass('saved-meta').text(item.name || '');
+          const dragHandle = $('<button>').addClass('drag-handle').attr('type', 'button').text('≡').attr('aria-label', 'Drag to reorder');
+
+          card.append(thumb, body.append(title, meta), dragHandle);
+
+          // import on click
+          card.on('click', function () {
+            importStockToUploads(item);
+          });
+
+          // Drag behavior
+          card.on('dragstart', function (event) {
+            event.originalEvent.dataTransfer.setData('text/plain', item.id);
+            event.originalEvent.dataTransfer.effectAllowed = 'move';
+          });
+          card.on('dragover', function (event) {
+            event.preventDefault();
+            $(this).addClass('drag-over');
+            event.originalEvent.dataTransfer.dropEffect = 'move';
+          });
+          card.on('dragleave', function () {
+            $(this).removeClass('drag-over');
+          });
+          card.on('drop', function (event) {
+            event.preventDefault();
+            $(this).removeClass('drag-over');
+            const fromId = event.originalEvent.dataTransfer.getData('text/plain');
+            const toId = $(this).data('stock-id');
+            reorderStockItems(fromId, toId);
+          });
+
+          stockGalleryEl.append(card);
+        });
+      }
+
+      function reorderStockItems(fromId, toId) {
+        if (!fromId || !toId || fromId === toId) return;
+        const fromIndex = stockImages.findIndex((it) => it.id === fromId);
+        if (fromIndex < 0) return;
+        const [moved] = stockImages.splice(fromIndex, 1);
+        const targetIndex = stockImages.findIndex((it) => it.id === toId);
+        if (targetIndex < 0) {
+          stockImages.splice(fromIndex, 0, moved);
+          return;
+        }
+        stockImages.splice(targetIndex, 0, moved);
+        renderStockGallery();
+      }
+
+      function importStockToUploads(stockItem) {
+        if (!stockItem || !stockItem.src) return;
+        const id = Date.now() + Math.random();
+        const newItem = {
+          id,
+          file: null,
+          src: stockItem.src,
+          image: stockItem.image || null,
+          name: stockItem.name || '',
+          price: stockItem.price || '',
+          cropType: 'original',
+          zoomLevel: 1,
+          offsetX: 0,
+          offsetY: 0,
+          savedDataUrl: null,
+          savedWidth: null,
+          savedHeight: null
+        };
+        if (!newItem.image) {
+          createImage(newItem.src).then((img) => {
+            newItem.image = img;
+            uploadedImages.push(newItem);
+            renderImageList();
+            selectImageById(newItem.id);
+            saveToStorage();
+          }).catch(() => {});
+        } else {
+          uploadedImages.push(newItem);
+          renderImageList();
+          selectImageById(newItem.id);
+          saveToStorage();
+        }
+      }
+
       function openDb() {
         return new Promise((resolve, reject) => {
           if (!window.indexedDB) {
@@ -752,12 +943,11 @@
         });
       }
 
-      function saveImagesToDb(items) {
+      function saveImagesToDb(state) {
         openDb().then((db) => {
           const tx = db.transaction(IDB_STORE_NAME, 'readwrite');
           const store = tx.objectStore(IDB_STORE_NAME);
-          store.clear();
-          items.forEach((item) => store.put(item));
+          store.put(state);
           tx.oncomplete = function () {
             db.close();
           };
@@ -775,9 +965,9 @@
           return new Promise((resolve, reject) => {
             const tx = db.transaction(IDB_STORE_NAME, 'readonly');
             const store = tx.objectStore(IDB_STORE_NAME);
-            const request = store.getAll();
+            const request = store.get('imageEditState');
             request.onsuccess = function () {
-              resolve(request.result || []);
+              resolve(request.result || null);
               db.close();
             };
             request.onerror = function () {
@@ -800,7 +990,9 @@
           const exportHeight = Math.round(exportWidth / targetRatio);
           const exportCanvas = document.createElement('canvas');
           exportCanvas.width = exportWidth;
-          exportCanvas.height = exportHeight;
+          const imageHeight = Math.round(exportWidth / targetRatio);
+          const footerHeight = 170;
+          exportCanvas.height = imageHeight + footerHeight;
           const exportCtx = exportCanvas.getContext('2d');
 
           const previewFrame = getFrameBounds(900, 900, targetRatio);
@@ -810,17 +1002,19 @@
           const sourceWidth = Math.min(item.image.naturalWidth, previewFrame.width / previewScale);
           const sourceHeight = Math.min(item.image.naturalHeight, previewFrame.height / previewScale);
 
-          exportCtx.drawImage(item.image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, exportWidth, exportHeight);
+          exportCtx.drawImage(item.image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, exportWidth, imageHeight);
           drawWatermark(exportCtx, {
             x: 0,
             y: 0,
             width: exportWidth,
-            height: exportHeight
+            height: imageHeight
           });
+          drawTextFooter(exportCtx, exportWidth, imageHeight, footerHeight, item.name, item.price);
 
-          item.savedDataUrl = exportCanvas.toDataURL('image/jpeg', 0.8);
+          item.savedDataUrl = exportCanvas.toDataURL('image/jpeg', 0.9);
           item.savedWidth = exportWidth;
-          item.savedHeight = exportHeight;
+          item.savedHeight = imageHeight + footerHeight;
+          item.hasFooter = true;
           resolve();
         });
       }
@@ -828,19 +1022,23 @@
       function loadFromStorage() {
         const loadFromLocalStorage = () => {
           const stored = localStorage.getItem('imageEditState');
-          if (!stored) return [];
+          if (!stored) return null;
           try {
-            const savedItems = JSON.parse(stored);
-            return Array.isArray(savedItems) ? savedItems : [];
+            const savedState = JSON.parse(stored);
+            return savedState && typeof savedState === 'object' ? savedState : null;
           } catch (err) {
             console.warn('Unable to parse localStorage state', err);
-            return [];
+            return null;
           }
         };
 
-        const restoreItems = async (storedItems) => {
-          selectedImageId = storedItems[0]?.id || null;
-          const loadPromises = storedItems.map(async (item) => {
+        const restoreState = async (state) => {
+          if (!state) return;
+          uploadedImages = [];
+            savedImages = Array.isArray(state.savedImages) ? state.savedImages.filter((item) => item.savedDataUrl).map((it) => (Object.assign({ hasFooter: it.hasFooter !== undefined ? it.hasFooter : !!it.savedDataUrl }, it))) : [];
+          selectedImageId = state.uploadedImages?.[0]?.id || null;
+
+          const loadPromises = (Array.isArray(state.uploadedImages) ? state.uploadedImages : []).map(async (item) => {
             const newItem = {
               id: item.id,
               fileName: item.fileName || item.file?.name || 'image',
@@ -851,16 +1049,10 @@
               cropType: item.cropType || 'original',
               zoomLevel: item.zoomLevel || 1,
               offsetX: item.offsetX || 0,
-              offsetY: item.offsetY || 0,
-              savedDataUrl: item.savedDataUrl || null,
-              savedWidth: item.savedWidth || null,
-              savedHeight: item.savedHeight || null
+              offsetY: item.offsetY || 0
             };
             try {
               newItem.image = await createImage(newItem.src);
-              if (!newItem.savedDataUrl && newItem.image && newItem.savedWidth && newItem.savedHeight) {
-                await rebuildSavedDataUrl(newItem);
-              }
             } catch (err) {
               console.warn('Could not restore image', err);
             }
@@ -868,11 +1060,11 @@
           });
 
           const loadedItems = await Promise.all(loadPromises);
-          images = loadedItems.filter((item) => item.image);
+          uploadedImages = loadedItems.filter((item) => item.image);
           renderImageList();
           renderSavedGallery();
           if (selectedImageId) {
-            const matchingItem = images.find((item) => item.id === selectedImageId);
+            const matchingItem = uploadedImages.find((item) => item.id === selectedImageId);
             if (matchingItem) {
               selectImageById(selectedImageId);
             }
@@ -880,52 +1072,64 @@
         };
 
         if (window.indexedDB) {
-          loadImagesFromDb().then((dbItems) => {
-            if (Array.isArray(dbItems) && dbItems.length) {
-              restoreItems(dbItems);
+          loadImagesFromDb().then((state) => {
+            if (state && typeof state === 'object') {
+              restoreState(state);
             } else if (window.localStorage) {
-              restoreItems(loadFromLocalStorage());
+              restoreState(loadFromLocalStorage());
             }
           }).catch((err) => {
             console.warn('IndexedDB load failed', err);
             if (window.localStorage) {
-              restoreItems(loadFromLocalStorage());
+              restoreState(loadFromLocalStorage());
             }
           });
         } else if (window.localStorage) {
-          const storedItems = loadFromLocalStorage();
-          if (storedItems.length) {
-            restoreItems(storedItems);
-          }
+          restoreState(loadFromLocalStorage());
         }
       }
 
       function saveToStorage() {
-        const serializable = images.map((item) => ({
-          id: item.id,
-          fileName: item.fileName || item.file?.name || 'image',
-          src: item.src,
-          name: item.name || '',
-          price: item.price || '',
-          cropType: item.cropType || 'original',
-          zoomLevel: item.zoomLevel || 1,
-          offsetX: item.offsetX || 0,
-          offsetY: item.offsetY || 0,
-          savedDataUrl: item.savedDataUrl || null,
-          savedWidth: item.savedWidth || null,
-          savedHeight: item.savedHeight || null
-        }));
+        const state = {
+          id: 'imageEditState',
+          uploadedImages: uploadedImages.map((item) => ({
+            id: item.id,
+            fileName: item.fileName || item.file?.name || 'image',
+            src: item.src,
+            name: item.name || '',
+            price: item.price || '',
+            cropType: item.cropType || 'original',
+            zoomLevel: item.zoomLevel || 1,
+            offsetX: item.offsetX || 0,
+            offsetY: item.offsetY || 0
+          })),
+          savedImages: savedImages.map((item) => ({
+            id: item.id,
+            sourceId: item.sourceId,
+            fileName: item.fileName || 'Saved Image',
+            savedDataUrl: item.savedDataUrl,
+            hasFooter: item.hasFooter || false,
+            name: item.name || '',
+            price: item.price || '',
+            cropType: item.cropType || 'original',
+            zoomLevel: item.zoomLevel || 1,
+            offsetX: item.offsetX || 0,
+            offsetY: item.offsetY || 0,
+            savedWidth: item.savedWidth || null,
+            savedHeight: item.savedHeight || null
+          }))
+        };
 
         if (window.localStorage) {
           try {
-            localStorage.setItem('imageEditState', JSON.stringify(serializable));
+            localStorage.setItem('imageEditState', JSON.stringify(state));
           } catch (err) {
             console.warn('Unable to save localStorage state', err);
           }
         }
 
         if (window.indexedDB) {
-          saveImagesToDb(serializable);
+          saveImagesToDb(state);
         }
       }
 
@@ -962,25 +1166,90 @@
         context.restore();
       }
 
-      function drawTextOverlay(context, width, height, scale = 1) {
-        const nameText = nameInput.val().trim() || 'Name';
-        const priceValue = priceInput.val().trim() || 'Price';
-        const priceText = `₹ ${priceValue}`;
+      function drawTextOverlay(context, width, height, scale = 1, nameText = null, priceValue = null) {
+        const resolvedName = (nameText !== null ? nameText : nameInput.val().trim()) || 'Name';
+        const resolvedPrice = (priceValue !== null ? priceValue : priceInput.val().trim()) || 'Price';
+        const priceText = `₹ ${resolvedPrice}`;
         const footerHeight = 110 * scale;
-        const textY = height - footerHeight / 2 + 10;
+        const padding = 28 * scale;
+        const textY = height - footerHeight + padding;
 
         context.save();
-        context.fillStyle = 'rgba(255,255,255,0.95)';
+        context.fillStyle = 'rgba(0, 0, 0, 0.45)';
         context.fillRect(0, height - footerHeight, width, footerHeight);
 
-        context.font = `bold ${Math.round(40 * scale)}px Arial`;
-        context.fillStyle = '#111';
+        context.fillStyle = '#fff';
+        context.font = `bold ${Math.round(42 * scale)}px Arial`;
         context.textAlign = 'left';
-        context.fillText(nameText, 30, height - footerHeight / 2 + 10);
+        context.fillText(resolvedName, 30 * scale, textY);
 
-        context.font = `${Math.round(32 * scale)}px Arial`;
-        context.fillStyle = '#444';
-        context.fillText(priceText, 30, height - 18 / scale + 10 * scale);
+        context.font = `${Math.round(34 * scale)}px Arial`;
+        context.fillText(priceText, 30 * scale, textY + Math.round(44 * scale));
+        context.restore();
+      }
+
+      function drawTextFooter(context, width, imageHeight, footerHeight, nameText, priceValue, scale = 1) {
+        const resolvedName = nameText || 'Name';
+        const resolvedPrice = priceValue || 'Price';
+        const priceText = `₹ ${resolvedPrice}`;
+        const padding = 30 * scale;
+        const titleFontSize = Math.round(44 * scale);
+        const priceFontSize = Math.round(36 * scale);
+        const suffixFontSize = Math.round(18 * scale);
+        const lineSpacing = Math.round(12 * scale);
+        const separatorGap = Math.round(10 * scale);
+        // Extra vertical gap between separator line and price text
+        const priceGap = Math.round(15 * scale);
+
+        const totalTextHeight = titleFontSize + separatorGap + priceFontSize;
+        const top = imageHeight + Math.round((footerHeight - totalTextHeight) / 2);
+
+        context.save();
+        context.fillStyle = '#fff';
+        context.fillRect(0, imageHeight, width, footerHeight);
+
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+
+        // Draw centered title
+        context.fillStyle = '#111';
+        context.font = `bold ${titleFontSize}px Arial`;
+        const titleCenter = top + titleFontSize / 2;
+        context.fillText(resolvedName, width / 2, titleCenter);
+
+        // Draw separator line below the title
+        const sepY = top + titleFontSize + Math.round(separatorGap / 2);
+        context.strokeStyle = '#d1d5db';
+        context.lineWidth = Math.max(1, Math.round(0.6 * scale));
+        context.beginPath();
+        context.moveTo(padding, sepY);
+        context.lineTo(width - padding, sepY);
+        context.stroke();
+
+        // Draw price centered below separator (with small suffix)
+        const priceCenter = top + titleFontSize + separatorGap + priceGap + priceFontSize / 2;
+        // Ensure price uses the price font and is centered
+        context.font = `${priceFontSize}px Arial`;
+        context.textAlign = 'center';
+        context.fillStyle = '#111';
+        const priceCombined = priceText;
+        context.fillText(priceCombined, width / 2, priceCenter);
+
+        // Measure price width using the price font so we can place the suffix just to the right
+        context.font = `${priceFontSize}px Arial`;
+        const priceMetrics = context.measureText(priceCombined);
+
+        // Draw small, low-opacity suffix to the right of price. Use left alignment for precise placement.
+        const suffix = ' / Piece';
+        context.font = `${suffixFontSize}px Arial`;
+        context.textAlign = 'left';
+        context.fillStyle = 'rgba(17,24,39,0.7)';
+        const suffixX = width / 2 + (priceMetrics.width / 2) + Math.round(12 * scale);
+        context.fillText(suffix, suffixX, priceCenter);
+
+        // Restore center alignment for any potential later draws
+        context.textAlign = 'center';
+
         context.restore();
       }
 
@@ -1087,11 +1356,17 @@
       }
 
       downloadBtn.on('click', function () {
-        downloadSavedImagesPdf();
+        const source = $('#pdfSource').val() || 'saved';
+        downloadSavedImagesPdf(source);
+      });
+
+      // Stock download button handler
+      $('#stockDownloadBtn').on('click', function () {
+        downloadSavedImagesPdf('stock');
       });
 
       function getSelectedImage() {
-        return images.find((item) => item.id === selectedImageId);
+        return uploadedImages.find((item) => item.id === selectedImageId);
       }
 
       function updateCurrentState() {
@@ -1108,7 +1383,7 @@
       }
 
       function selectImageById(id) {
-        const item = images.find((image) => image.id === id);
+        const item = uploadedImages.find((image) => image.id === id);
         if (!item) return;
         selectedImageId = id;
         currentImage = item.image;
@@ -1129,7 +1404,7 @@
 
       function renderImageList() {
         imageList.empty();
-        images.forEach((item) => {
+        uploadedImages.forEach((item) => {
           const fileName = item.file?.name || item.fileName || 'Image';
           const card = $('<div>').addClass('image-card').toggleClass('selected', item.id === selectedImageId);
           const thumb = $('<img>').attr('src', item.src).attr('alt', fileName);
@@ -1155,7 +1430,7 @@
 
       function renderSavedGallery() {
         savedGallery.empty();
-        images.filter((item) => typeof item.savedDataUrl === 'string' && item.savedDataUrl.startsWith('data:image')).forEach((item) => {
+        savedImages.filter((item) => typeof item.savedDataUrl === 'string' && item.savedDataUrl.startsWith('data:image')).forEach((item) => {
           const card = $('<div>').addClass('saved-card').attr('draggable', true).data('saved-id', item.id);
           const thumb = $('<img>').attr('src', item.savedDataUrl).attr('alt', item.name || 'Saved image');
           const body = $('<div>').addClass('saved-body');
@@ -1218,10 +1493,11 @@
         const mode = cropType.val();
         const targetRatio = getTargetRatio(mode);
         const exportWidth = 1200;
-        const exportHeight = Math.round(exportWidth / targetRatio);
+        const imageHeight = Math.round(exportWidth / targetRatio);
+        const footerHeight = 170;
         const exportCanvas = document.createElement('canvas');
         exportCanvas.width = exportWidth;
-        exportCanvas.height = exportHeight;
+        exportCanvas.height = imageHeight + footerHeight;
         const exportCtx = exportCanvas.getContext('2d');
 
         const previewFrame = getFrameBounds(900, 900, targetRatio);
@@ -1240,19 +1516,58 @@
           0,
           0,
           exportWidth,
-          exportHeight
+          imageHeight
         );
 
         drawWatermark(exportCtx, {
           x: 0,
           y: 0,
           width: exportWidth,
-          height: exportHeight
+          height: imageHeight
         });
 
-        selectedItem.savedDataUrl = exportCanvas.toDataURL('image/jpeg', 0.8);
-        selectedItem.savedWidth = exportWidth;
-        selectedItem.savedHeight = exportHeight;
+        drawTextFooter(exportCtx, exportWidth, imageHeight, footerHeight, selectedItem.name, selectedItem.price);
+
+        const savedDataUrl = exportCanvas.toDataURL('image/jpeg', 0.9);
+        const savedId = `${selectedItem.id}-saved`;
+        const existingSaved = savedImages.find((item) => item.id === savedId);
+        // Compute next sequential item index by scanning existing saved fileNames like "itemN"
+        const getNextItemIndex = () => {
+          let max = 0;
+          for (const it of savedImages) {
+            const fn = it.fileName || '';
+            const m = fn.match(/^item(\d+)$/i);
+            if (m) {
+              const v = parseInt(m[1], 10);
+              if (!isNaN(v) && v > max) max = v;
+            }
+          }
+          return max + 1;
+        };
+        const fileName = `item${getNextItemIndex()}`;
+        const savedCopy = {
+          id: savedId,
+          sourceId: selectedItem.id,
+          fileName: fileName,
+          src: savedDataUrl,
+          savedDataUrl: savedDataUrl,
+          name: selectedItem.name || '',
+          price: selectedItem.price || '',
+          cropType: selectedItem.cropType || 'original',
+          zoomLevel: selectedItem.zoomLevel || 1,
+          offsetX: selectedItem.offsetX || 0,
+          offsetY: selectedItem.offsetY || 0,
+          savedWidth: exportWidth,
+          savedHeight: imageHeight + footerHeight,
+          hasFooter: true
+        };
+
+        if (existingSaved) {
+          Object.assign(existingSaved, savedCopy);
+        } else {
+          savedImages.push(savedCopy);
+        }
+
         renderSavedGallery();
         renderImageList();
         saveToStorage();
@@ -1261,7 +1576,8 @@
       function downloadSavedImage(item) {
         const link = document.createElement('a');
         link.href = item.savedDataUrl;
-        link.download = `${item.name || 'saved-image'}_${item.price || 'price'}.png`;
+        // Use the assigned fileName (e.g. item1, item2) when downloading
+        link.download = `${item.fileName || item.name || 'saved-image'}.jpg`;
         link.style.display = 'none';
         document.body.appendChild(link);
         link.click();
@@ -1269,9 +1585,9 @@
       }
 
       function removeUploadedImage(id) {
-        images = images.filter((item) => item.id !== id);
+        uploadedImages = uploadedImages.filter((item) => item.id !== id);
         if (selectedImageId === id) {
-          selectedImageId = images.length ? images[0].id : null;
+          selectedImageId = uploadedImages.length ? uploadedImages[0].id : null;
           if (selectedImageId) {
             selectImageById(selectedImageId);
           } else {
@@ -1286,31 +1602,63 @@
 
       function reorderSavedItems(fromId, toId) {
         if (fromId == null || toId == null || fromId === toId) return;
-        const fromIndex = images.findIndex((item) => item.id === fromId);
+        const fromIndex = savedImages.findIndex((item) => item.id === fromId);
         if (fromIndex < 0) return;
-        const [moved] = images.splice(fromIndex, 1);
-        const targetIndex = images.findIndex((item) => item.id === toId);
+        const [moved] = savedImages.splice(fromIndex, 1);
+        const targetIndex = savedImages.findIndex((item) => item.id === toId);
         if (targetIndex < 0) {
-          images.splice(fromIndex, 0, moved);
+          savedImages.splice(fromIndex, 0, moved);
           return;
         }
-        images.splice(targetIndex, 0, moved);
+        savedImages.splice(targetIndex, 0, moved);
         renderSavedGallery();
         saveToStorage();
       }
 
       function removeSavedImage(id) {
-        const item = images.find((image) => image.id === id);
-        if (!item) return;
-        item.savedDataUrl = null;
+        savedImages = savedImages.filter((image) => image.id !== id);
         renderSavedGallery();
         saveToStorage();
       }
 
-      function downloadSavedImagesPdf() {
-        const savedItems = images.filter((item) => typeof item.savedDataUrl === 'string' && item.savedDataUrl.startsWith('data:image'));
+      async function downloadSavedImagesPdf(source = 'saved') {
+        let savedItems = [];
+
+        if (source === 'stock') {
+          // Build temporary saved-like items from stockImages in their current order
+          const built = [];
+          const exportWidth = 1200;
+          for (let i = 0; i < stockImages.length; i++) {
+            const it = stockImages[i];
+            if (!it || !it.image) continue;
+            const img = it.image;
+            const imageHeight = Math.round(exportWidth * (img.naturalHeight / img.naturalWidth));
+            const canvas = document.createElement('canvas');
+            canvas.width = exportWidth;
+            canvas.height = imageHeight;
+            const cctx = canvas.getContext('2d');
+            cctx.fillStyle = '#ffffff';
+            cctx.fillRect(0, 0, canvas.width, canvas.height);
+            // draw image to fit width
+            cctx.drawImage(img, 0, 0, exportWidth, imageHeight);
+            const dataUrl = canvas.toDataURL('image/png');
+            built.push({
+              savedDataUrl: dataUrl,
+              savedWidth: exportWidth,
+              savedHeight: imageHeight,
+              name: it.name || it.fileName || '',
+              price: it.price || '',
+              hasFooter: false,
+              fileName: it.fileName || `item${i + 1}`
+            });
+          }
+          savedItems = built;
+        } else {
+          savedItems = savedImages.filter((item) => typeof item.savedDataUrl === 'string' && item.savedDataUrl.startsWith('data:image'));
+        }
+
         if (!savedItems.length) {
-          alert('No saved images available to download.');
+          alert('No images available to download.');
           return;
         }
 
@@ -1318,27 +1666,25 @@
         const margin = 20;
         const headerHeight = 60;
         const cardPadding = 16;
-        const titleHeight = 36;
-        const priceHeight = 24;
-        const cardContentSpacing = 12;
+        const titleHeight = 44;
+        const priceHeight = 34;
+        const cardContentSpacing = 14;
         const instagramUrl = 'https://www.instagram.com/pebblenestcreations?utm_source=qr&igsh=MTZmMDh4eXMzZHRtbw==';
 
-        function addSectionHeader() {
-          pdf.setFontSize(12);
+        function addCoverFooter() {
+          const footerHeight = 42;
+          const footerY = 842 - margin - footerHeight;
+          const footerText = 'Follow us on Instagram @pebblenestcreations';
+          const textWidth = pdf.getTextWidth(footerText);
+
+          pdf.setFillColor(37, 99, 235);
+          pdf.roundedRect(margin, footerY, pageWidth - margin * 2, footerHeight, 8, 8, 'F');
+
+          pdf.setFontSize(18);
           pdf.setFont('helvetica', 'bold');
-          pdf.setTextColor(34, 34, 34);
-          pdf.text('Pebblenest Instagram', margin, margin);
-
-          pdf.setFontSize(10);
-          pdf.setFont('helvetica', 'normal');
-          pdf.setTextColor(0, 102, 204);
-          const instaLinkText = 'Click to go Pebblenest Instagram page';
-          pdf.text(instaLinkText, margin, margin + 18);
-          pdf.link(margin, margin + 8, pdf.getTextWidth(instaLinkText), 12, { url: instagramUrl });
-
-          pdf.setDrawColor(200, 210, 220);
-          pdf.setLineWidth(0.5);
-          pdf.line(margin, margin + 24, pageWidth - margin, margin + 24);
+          pdf.setTextColor(255, 255, 255);
+          pdf.text(footerText, pageWidth / 2, footerY + footerHeight / 2 + 4, { align: 'center' });
+          pdf.link((pageWidth - textWidth) / 2, footerY + 6, textWidth, footerHeight - 12, { url: instagramUrl });
         }
 
         function computeItemPageHeight(item) {
@@ -1349,7 +1695,7 @@
           const aspectRatio = savedWidth && savedHeight ? savedWidth / savedHeight : 0.9;
           const imageHeight = imageBoxWidth / aspectRatio;
           const cardHeight = imageHeight + titleHeight + priceHeight + cardPadding * 2 + cardContentSpacing;
-          return cardHeight + margin * 2 + headerHeight;
+          return cardHeight + margin * 2;
         }
 
         function setPageSize(pageHeight) {
@@ -1371,9 +1717,8 @@
           }
           setPageSize(pageHeight);
 
-          addSectionHeader();
           const cardX = margin;
-          const cardY = margin + headerHeight;
+          const cardY = margin;
           const cardWidth = pageWidth - margin * 2;
           const imageBoxWidth = cardWidth - cardPadding * 2;
           const savedWidth = item.savedWidth || imageBoxWidth;
@@ -1389,58 +1734,62 @@
           pdf.roundedRect(cardX, cardY, cardWidth, cardHeight, 10, 10, 'S');
           pdf.addImage(item.savedDataUrl, 'PNG', cardX + cardPadding, imageY, imageWidth, imageHeight);
 
-          const titleY = imageY + imageHeight + cardContentSpacing + titleHeight / 2;
-          pdf.setFontSize(14);
-          pdf.setFont('helvetica', 'bold');
-          pdf.setTextColor(34, 34, 34);
-          const titleText = item.name || 'Product Name';
-          pdf.text(titleText, cardX + cardWidth / 2, titleY, { align: 'center' });
+          // Only draw title/price in PDF if the image does not already contain the footer
+          if (!item.hasFooter) {
+            const titleY = imageY + imageHeight + cardContentSpacing + titleHeight / 2;
+            pdf.setFontSize(20);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(34, 34, 34);
+            const titleText = item.name || 'Product Name';
+            pdf.text(titleText, cardX + cardWidth / 2, titleY, { align: 'center' });
 
-          const separatorY = titleY + 10;
-          pdf.setDrawColor(170, 180, 190);
-          pdf.setLineWidth(0.5);
-          pdf.line(cardX + cardPadding, separatorY, cardX + cardWidth - cardPadding, separatorY);
+            const separatorY = titleY + 12;
+            pdf.setDrawColor(170, 180, 190);
+            pdf.setLineWidth(0.5);
+            pdf.line(cardX + cardPadding, separatorY, cardX + cardWidth - cardPadding, separatorY);
 
-          const priceValue = item.price ? item.price : '0';
-          const suffixText = '/ piece';
-          pdf.setFontSize(16);
-          pdf.setFont('helvetica', 'bold');
-          pdf.setTextColor(0, 0, 0);
+            const priceValue = item.price ? item.price : '0';
+            const suffixText = '/ piece';
+            pdf.setFontSize(28);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(0, 0, 0);
 
-          const iconHeight = 14;
-          const iconWidth = rupeeIconImage ? (rupeeIconImage.width / rupeeIconImage.height) * iconHeight : 0;
-          const rupeeValueText = priceValue.toString();
-          const rupeeValueWidth = pdf.getTextWidth(rupeeValueText);
-          pdf.setFontSize(12);
-          pdf.setFont('helvetica', 'normal');
-          const suffixWidth = pdf.getTextWidth(suffixText);
-          const totalWidth = iconWidth + (iconWidth ? 6 : 0) + rupeeValueWidth + 6 + suffixWidth;
-          let priceX = cardX + (cardWidth - totalWidth) / 2;
-          const priceY = separatorY + priceHeight;
+            const iconHeight = 25;
+            const iconWidth = rupeeIconImage ? (rupeeIconImage.width / rupeeIconImage.height) * iconHeight : 0;
+            const rupeeValueText = priceValue.toString();
+            const rupeeValueWidth = pdf.getTextWidth(rupeeValueText);
+            pdf.setFontSize(24);
+            pdf.setFont('helvetica', 'normal');
+            const suffixWidth = pdf.getTextWidth(suffixText);
+            const totalWidth = iconWidth + (iconWidth ? 6 : 0) + rupeeValueWidth + 6 + suffixWidth;
+            let priceX = cardX + (cardWidth - totalWidth) / 2;
+            const priceY = separatorY + priceHeight;
 
-          pdf.setFontSize(16);
-          pdf.setFont('helvetica', 'bold');
-          pdf.setTextColor(0, 0, 0);
-          if (rupeeIconImage) {
-            pdf.addImage(rupeeIconImage, 'PNG', priceX, priceY - iconHeight + 3, iconWidth, iconHeight);
-            priceX += iconWidth + 6;
+            pdf.setFontSize(28);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(0, 0, 0);
+            if (rupeeIconImage) {
+              pdf.addImage(rupeeIconImage, 'PNG', priceX, priceY - iconHeight + 3, iconWidth, iconHeight);
+              priceX += iconWidth + 6;
+            }
+
+            pdf.text(rupeeValueText, priceX, priceY);
+            priceX += rupeeValueWidth + 6;
+
+            pdf.setFontSize(18);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(113, 128, 150);
+            pdf.text(suffixText, priceX, priceY);
           }
-
-          pdf.text(rupeeValueText, priceX, priceY);
-          priceX += rupeeValueWidth + 6;
-
-          pdf.setFontSize(12);
-          pdf.setFont('helvetica', 'normal');
-          pdf.setTextColor(113, 128, 150);
-          pdf.text(suffixText, priceX, priceY);
         }
 
         let pdf;
         let startIndex = 0;
         if (coverImage) {
           pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [pageWidth, 842] });
+          const footerHeight = 56;
           const coverMaxWidth = pageWidth - margin * 2;
-          const coverMaxHeight = 842 - margin * 2;
+          const coverMaxHeight = 842 - margin * 2 - footerHeight;
           const coverAspect = coverImage.width / coverImage.height;
           let coverWidth = coverMaxWidth;
           let coverHeight = coverWidth / coverAspect;
@@ -1449,8 +1798,9 @@
             coverWidth = coverHeight * coverAspect;
           }
           const coverX = (pageWidth - coverWidth) / 2;
-          const coverY = (842 - coverHeight) / 2;
+          const coverY = margin;
           pdf.addImage(coverImage, 'JPEG', coverX, coverY, coverWidth, coverHeight);
+          addCoverFooter();
           startIndex = 0;
         } else {
           pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [pageWidth, computeItemPageHeight(savedItems[0])] });
