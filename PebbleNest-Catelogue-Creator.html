@@ -1,0 +1,1477 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Editor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 24px;
+      color: #222;
+    }
+
+    .card {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #1f3d6d;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .controls div {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input, select, button {
+      padding: 10px 12px;
+      border: 1px solid #cfd8e3;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .preview-box {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 16px;
+      background: #fafafa;
+      text-align: center;
+    }
+
+    .preview-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    canvas {
+      max-width: 100%;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      background: #fff;
+      cursor: grab;
+      touch-action: pan-y pinch-zoom;
+    }
+
+    .hint {
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .watermark-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin: 16px 0 12px;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    .watermark-controls label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .watermark-controls input[type="range"] {
+      width: 140px;
+      padding: 0;
+    }
+
+    .zoom-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin: 12px 0 16px;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    .zoom-controls button {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      font-size: 20px;
+      font-weight: 700;
+      border-radius: 999px;
+    }
+
+    .zoom-controls input[type="range"] {
+      width: 180px;
+      padding: 0;
+    }
+
+    .gallery-section {
+      margin-top: 24px;
+    }
+
+    .gallery-section h3 {
+      margin: 0 0 12px;
+      color: #1f3d6d;
+      font-size: 18px;
+    }
+
+    .image-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+    }
+
+    .saved-gallery {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .image-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+      cursor: pointer;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+      min-height: 160px;
+    }
+
+    .image-card.selected {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.24);
+      transform: translateY(-1px);
+    }
+
+    .image-card img {
+      width: 100%;
+      display: block;
+      height: 110px;
+      object-fit: cover;
+    }
+
+    .image-card .card-body {
+      padding: 10px 12px;
+    }
+
+    .image-card .image-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f3d6d;
+    }
+
+    .image-card .image-subtitle {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .saved-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+      padding: 12px;
+      min-height: 130px;
+    }
+
+    .saved-card.drag-over {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .saved-card img {
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .saved-card .saved-body {
+      padding: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .saved-card .saved-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .saved-card .saved-price {
+      margin: 0;
+      font-size: 18px;
+      color: #2563eb;
+      font-weight: 700;
+    }
+
+    .saved-card .saved-meta {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    .saved-card .action-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .drag-handle {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 18px;
+      cursor: grab;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .image-card {
+      position: relative;
+    }
+
+    .image-card .close-btn,
+    .saved-card .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: rgba(17,24,39,0.8);
+      color: white;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .saved-card .action-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .saved-card .action-bar button {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #111827;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 14px;
+      }
+
+      .card {
+        padding: 16px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .watermark-controls,
+      .zoom-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .watermark-controls label,
+      .zoom-controls button,
+      .zoom-controls input[type="range"] {
+        width: 100%;
+      }
+
+      .watermark-controls input[type="range"] {
+        width: 100%;
+      }
+
+      .zoom-controls input[type="range"] {
+        width: 100%;
+      }
+
+      .preview-box {
+        padding: 12px;
+      }
+
+      .image-card img {
+        height: 120px;
+      }
+
+      .saved-card img {
+        height: 140px;
+      }
+
+      .saved-card .saved-title {
+        font-size: 22px;
+      }
+
+      .saved-card .saved-price {
+        font-size: 20px;
+      }
+
+      .controls div {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .card {
+        padding: 12px;
+      }
+
+      .watermark-controls,
+      .zoom-controls {
+        gap: 10px;
+      }
+
+      .saved-card .action-bar,
+      .watermark-controls,
+      .zoom-controls {
+        padding: 10px;
+      }
+
+      .image-card img {
+        height: 110px;
+      }
+
+      .saved-card img {
+        height: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Image Crop & Download</h2>
+
+    <div class="controls">
+      <div>
+        <label for="imageUpload">Upload Images</label>
+        <input type="file" id="imageUpload" accept="image/*" multiple />
+      </div>
+
+      <div>
+        <label for="cropType">Crop Option</label>
+        <select id="cropType">
+          <option value="original">Original</option>
+          <option value="landscape">Landscape (4:3)</option>
+          <option value="portrait">Portrait (3:4)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="nameInput">Name</label>
+        <input type="text" id="nameInput" placeholder="Enter name" />
+      </div>
+
+      <div>
+        <label for="priceInput">Price</label>
+        <input type="text" id="priceInput" placeholder="Enter price" />
+      </div>
+    </div>
+
+    <div class="gallery-section">
+      <h3>Uploaded Images</h3>
+      <div class="image-list" id="imageList"></div>
+    </div>
+
+    <div class="preview-box">
+      <canvas id="previewCanvas"></canvas>
+      <div class="hint">Choose an image, select a crop type, enter name and price, then save or download.</div>
+      <div class="preview-actions">
+        <button type="button" id="saveBtn">Save Image</button>
+        <button type="button" id="downloadBtn">Download PDF</button>
+      </div>
+    </div>
+
+    <div class="gallery-section">
+      <h3>Saved Images</h3>
+      <div class="saved-gallery" id="savedGallery"></div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    $(function () {
+      const imageUpload = $('#imageUpload');
+      const cropType = $('#cropType');
+      const nameInput = $('#nameInput');
+      const priceInput = $('#priceInput');
+      const downloadBtn = $('#downloadBtn');
+      const previewCanvas = $('#previewCanvas')[0];
+      const ctx = previewCanvas.getContext('2d');
+      const watermarkTypeInputs = $('input[name="watermarkType"]');
+      const watermarkOpacity = $('#watermarkOpacity');
+      const zoomRange = $('#zoomRange');
+      const zoomInBtn = $('#zoomInBtn');
+      const zoomOutBtn = $('#zoomOutBtn');
+      const saveBtn = $('#saveBtn');
+      const imageList = $('#imageList');
+      const savedGallery = $('#savedGallery');
+      const { jsPDF } = window.jspdf;
+      let currentImage = null;
+      let selectedImageId = null;
+      let images = [];
+      let watermarkImages = { logo: null, logoWhite: null };
+      let rupeeIconImage = null;
+      let coverImage = null;
+      let offsetX = 0;
+      let offsetY = 0;
+      let isDragging = false;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let dragStartOffsetX = 0;
+      let dragStartOffsetY = 0;
+      let zoomLevel = 1;
+      let pinchStartDistance = null;
+      let pinchStartZoom = 1;
+      let touchStartAxis = null;
+
+      previewCanvas.addEventListener('mousedown', handleMouseDown);
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      previewCanvas.addEventListener('wheel', handleWheel, { passive: false });
+      previewCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd);
+      window.addEventListener('touchcancel', handleTouchEnd);
+
+      loadWatermarkImages();
+      loadRupeeIcon();
+      loadCoverImage();
+      loadFromStorage();
+
+      imageUpload.on('change', function (e) {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+
+        files.forEach((file) => {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const src = event.target.result;
+            const id = Date.now() + Math.random();
+            const item = {
+              id: id,
+              file: file,
+              src: src,
+              image: null,
+              name: '',
+              price: '',
+              cropType: 'original',
+              zoomLevel: 1,
+              offsetX: 0,
+              offsetY: 0,
+              savedDataUrl: null,
+              savedWidth: null,
+              savedHeight: null
+            };
+
+            const img = new Image();
+            img.onload = function () {
+              item.image = img;
+              images.push(item);
+              renderImageList();
+              if (!selectedImageId) {
+                selectImageById(item.id);
+              }
+              saveToStorage();
+            };
+            img.src = src;
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      cropType.on('change', function () {
+        resetOffset();
+        updateCurrentState();
+        renderPreview();
+      });
+      watermarkTypeInputs.on('change', function () {
+        updateCurrentState();
+        renderPreview();
+      });
+      watermarkOpacity.on('input', renderPreview);
+      nameInput.on('input', function () {
+        updateCurrentState();
+        renderPreview();
+      });
+      priceInput.on('input', function () {
+        updateCurrentState();
+        renderPreview();
+      });
+      saveBtn.on('click', function () {
+        saveCurrentImage();
+      });
+      zoomInBtn.on('click', function () {
+        zoomLevel = clamp(Number((zoomLevel + 0.1).toFixed(1)), 0.8, 2.5);
+        zoomRange.val(zoomLevel.toFixed(1));
+        updateCurrentState();
+        renderPreview();
+      });
+      zoomOutBtn.on('click', function () {
+        zoomLevel = clamp(Number((zoomLevel - 0.1).toFixed(1)), 0.8, 2.5);
+        zoomRange.val(zoomLevel.toFixed(1));
+        updateCurrentState();
+        renderPreview();
+      });
+      zoomRange.on('input', function () {
+        zoomLevel = parseFloat(zoomRange.val()) || 1;
+        updateCurrentState();
+        renderPreview();
+      });
+
+      function renderPreview() {
+        if (!currentImage) return;
+
+        const selectedItem = getSelectedImage();
+        if (selectedItem) {
+          selectedItem.zoomLevel = zoomLevel;
+          selectedItem.offsetX = offsetX;
+          selectedItem.offsetY = offsetY;
+          selectedItem.cropType = cropType.val();
+          selectedItem.name = nameInput.val().trim();
+          selectedItem.price = priceInput.val().trim();
+        }
+
+        const canvasWidth = 900;
+        const canvasHeight = 900;
+        const ratio = getTargetRatio(cropType.val());
+        const frame = getFrameBounds(canvasWidth, canvasHeight, ratio);
+        const baseScale = Math.max(frame.width / currentImage.naturalWidth, frame.height / currentImage.naturalHeight);
+        const scale = baseScale * zoomLevel;
+        const drawWidth = currentImage.naturalWidth * scale;
+        const drawHeight = currentImage.naturalHeight * scale;
+        const availableX = frame.width - drawWidth;
+        const availableY = frame.height - drawHeight;
+
+        previewCanvas.width = canvasWidth;
+        previewCanvas.height = canvasHeight;
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        offsetX = clamp(offsetX, availableX, 0);
+        offsetY = clamp(offsetY, availableY, 0);
+
+        if (selectedItem) {
+          selectedItem.offsetX = offsetX;
+          selectedItem.offsetY = offsetY;
+        }
+
+        ctx.drawImage(currentImage, frame.x + offsetX, frame.y + offsetY, drawWidth, drawHeight);
+
+        ctx.save();
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 6]);
+        ctx.strokeRect(frame.x, frame.y, frame.width, frame.height);
+        ctx.restore();
+
+        drawWatermark(ctx, frame);
+        drawTextOverlay(ctx, canvasWidth, canvasHeight);
+      }
+
+      function getTargetRatio(mode) {
+        if (mode === 'portrait') return 3 / 4;
+        if (mode === 'landscape') return 4 / 3;
+        return currentImage ? currentImage.naturalWidth / currentImage.naturalHeight : 1;
+      }
+
+      function getFrameBounds(width, height, ratio) {
+        let frameWidth = width * 0.82;
+        let frameHeight = frameWidth / ratio;
+
+        if (frameHeight > height * 0.82) {
+          frameHeight = height * 0.82;
+          frameWidth = frameHeight * ratio;
+        }
+
+        return {
+          x: (width - frameWidth) / 2,
+          y: (height - frameHeight) / 2,
+          width: frameWidth,
+          height: frameHeight
+        };
+      }
+
+      function resetOffset() {
+        if (!currentImage) return;
+        const ratio = getTargetRatio(cropType.val());
+        const frame = getFrameBounds(900, 900, ratio);
+        const baseScale = Math.max(frame.width / currentImage.naturalWidth, frame.height / currentImage.naturalHeight);
+        const scale = baseScale * zoomLevel;
+        const drawWidth = currentImage.naturalWidth * scale;
+        const drawHeight = currentImage.naturalHeight * scale;
+
+        offsetX = (frame.width - drawWidth) / 2;
+        offsetY = (frame.height - drawHeight) / 2;
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function loadWatermarkImages() {
+        const logo = new Image();
+        logo.crossOrigin = 'anonymous';
+        logo.onload = function () {
+          watermarkImages.logo = logo;
+          renderPreview();
+        };
+        logo.src = 'https://raw.githubusercontent.com/hiranjose07-cloud/ImgEdit/refs/heads/main/PebbleNest-logo1.png';
+
+        const logoWhite = new Image();
+        logoWhite.crossOrigin = 'anonymous';
+        logoWhite.onload = function () {
+          watermarkImages.logoWhite = logoWhite;
+          renderPreview();
+        };
+        logoWhite.src = 'https://raw.githubusercontent.com/hiranjose07-cloud/ImgEdit/refs/heads/main/PebbleNest-logo2.png';
+      }
+
+      function loadRupeeIcon() {
+        const icon = new Image();
+        icon.crossOrigin = 'anonymous';
+        icon.onload = function () {
+          rupeeIconImage = icon;
+        };
+        icon.src = 'https://raw.githubusercontent.com/hiranjose07-cloud/ImgEdit/refs/heads/main/rupee.png';
+      }
+
+      function loadCoverImage() {
+        const cover = new Image();
+        cover.crossOrigin = 'anonymous';
+        cover.onload = function () {
+          coverImage = cover;
+        };
+        cover.src = 'https://raw.githubusercontent.com/hiranjose07-cloud/ImgEdit/refs/heads/main/PN-cvrpic.jpg';
+      }
+
+      const IDB_DB_NAME = 'ImageEditDb';
+      const IDB_STORE_NAME = 'images';
+
+      function createImage(src) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          if (/^https?:\/\//i.test(src)) {
+            img.crossOrigin = 'anonymous';
+          }
+          img.onload = function () {
+            resolve(img);
+          };
+          img.onerror = function () {
+            reject(new Error('Failed to load image'));
+          };
+          img.src = src;
+        });
+      }
+
+      function openDb() {
+        return new Promise((resolve, reject) => {
+          if (!window.indexedDB) {
+            return reject(new Error('IndexedDB not supported'));
+          }
+          const request = indexedDB.open(IDB_DB_NAME, 1);
+          request.onupgradeneeded = function (event) {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(IDB_STORE_NAME)) {
+              db.createObjectStore(IDB_STORE_NAME, { keyPath: 'id' });
+            }
+          };
+          request.onsuccess = function () {
+            resolve(request.result);
+          };
+          request.onerror = function () {
+            reject(request.error);
+          };
+        });
+      }
+
+      function saveImagesToDb(items) {
+        openDb().then((db) => {
+          const tx = db.transaction(IDB_STORE_NAME, 'readwrite');
+          const store = tx.objectStore(IDB_STORE_NAME);
+          store.clear();
+          items.forEach((item) => store.put(item));
+          tx.oncomplete = function () {
+            db.close();
+          };
+          tx.onerror = function () {
+            console.warn('IndexedDB save failed', tx.error);
+            db.close();
+          };
+        }).catch((err) => {
+          console.warn('IndexedDB save skipped', err);
+        });
+      }
+
+      function loadImagesFromDb() {
+        return openDb().then((db) => {
+          return new Promise((resolve, reject) => {
+            const tx = db.transaction(IDB_STORE_NAME, 'readonly');
+            const store = tx.objectStore(IDB_STORE_NAME);
+            const request = store.getAll();
+            request.onsuccess = function () {
+              resolve(request.result || []);
+              db.close();
+            };
+            request.onerror = function () {
+              reject(request.error);
+              db.close();
+            };
+          });
+        });
+      }
+
+      function rebuildSavedDataUrl(item) {
+        return new Promise((resolve) => {
+          if (!item.image || !item.src) {
+            return resolve();
+          }
+
+          const mode = item.cropType || 'original';
+          const targetRatio = getTargetRatio(mode);
+          const exportWidth = 1200;
+          const exportHeight = Math.round(exportWidth / targetRatio);
+          const exportCanvas = document.createElement('canvas');
+          exportCanvas.width = exportWidth;
+          exportCanvas.height = exportHeight;
+          const exportCtx = exportCanvas.getContext('2d');
+
+          const previewFrame = getFrameBounds(900, 900, targetRatio);
+          const previewScale = Math.max(previewFrame.width / item.image.naturalWidth, previewFrame.height / item.image.naturalHeight) * (item.zoomLevel || 1);
+          const sourceX = Math.max(0, -item.offsetX / previewScale);
+          const sourceY = Math.max(0, -item.offsetY / previewScale);
+          const sourceWidth = Math.min(item.image.naturalWidth, previewFrame.width / previewScale);
+          const sourceHeight = Math.min(item.image.naturalHeight, previewFrame.height / previewScale);
+
+          exportCtx.drawImage(item.image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, exportWidth, exportHeight);
+          drawWatermark(exportCtx, {
+            x: 0,
+            y: 0,
+            width: exportWidth,
+            height: exportHeight
+          });
+
+          item.savedDataUrl = exportCanvas.toDataURL('image/jpeg', 0.8);
+          item.savedWidth = exportWidth;
+          item.savedHeight = exportHeight;
+          resolve();
+        });
+      }
+
+      function loadFromStorage() {
+        const loadFromLocalStorage = () => {
+          const stored = localStorage.getItem('imageEditState');
+          if (!stored) return [];
+          try {
+            const savedItems = JSON.parse(stored);
+            return Array.isArray(savedItems) ? savedItems : [];
+          } catch (err) {
+            console.warn('Unable to parse localStorage state', err);
+            return [];
+          }
+        };
+
+        const restoreItems = async (storedItems) => {
+          selectedImageId = storedItems[0]?.id || null;
+          const loadPromises = storedItems.map(async (item) => {
+            const newItem = {
+              id: item.id,
+              fileName: item.fileName || item.file?.name || 'image',
+              src: item.src,
+              image: null,
+              name: item.name || '',
+              price: item.price || '',
+              cropType: item.cropType || 'original',
+              zoomLevel: item.zoomLevel || 1,
+              offsetX: item.offsetX || 0,
+              offsetY: item.offsetY || 0,
+              savedDataUrl: item.savedDataUrl || null,
+              savedWidth: item.savedWidth || null,
+              savedHeight: item.savedHeight || null
+            };
+            try {
+              newItem.image = await createImage(newItem.src);
+              if (!newItem.savedDataUrl && newItem.image && newItem.savedWidth && newItem.savedHeight) {
+                await rebuildSavedDataUrl(newItem);
+              }
+            } catch (err) {
+              console.warn('Could not restore image', err);
+            }
+            return newItem;
+          });
+
+          const loadedItems = await Promise.all(loadPromises);
+          images = loadedItems.filter((item) => item.image);
+          renderImageList();
+          renderSavedGallery();
+          if (selectedImageId) {
+            const matchingItem = images.find((item) => item.id === selectedImageId);
+            if (matchingItem) {
+              selectImageById(selectedImageId);
+            }
+          }
+        };
+
+        if (window.indexedDB) {
+          loadImagesFromDb().then((dbItems) => {
+            if (Array.isArray(dbItems) && dbItems.length) {
+              restoreItems(dbItems);
+            } else if (window.localStorage) {
+              restoreItems(loadFromLocalStorage());
+            }
+          }).catch((err) => {
+            console.warn('IndexedDB load failed', err);
+            if (window.localStorage) {
+              restoreItems(loadFromLocalStorage());
+            }
+          });
+        } else if (window.localStorage) {
+          const storedItems = loadFromLocalStorage();
+          if (storedItems.length) {
+            restoreItems(storedItems);
+          }
+        }
+      }
+
+      function saveToStorage() {
+        const serializable = images.map((item) => ({
+          id: item.id,
+          fileName: item.fileName || item.file?.name || 'image',
+          src: item.src,
+          name: item.name || '',
+          price: item.price || '',
+          cropType: item.cropType || 'original',
+          zoomLevel: item.zoomLevel || 1,
+          offsetX: item.offsetX || 0,
+          offsetY: item.offsetY || 0,
+          savedDataUrl: item.savedDataUrl || null,
+          savedWidth: item.savedWidth || null,
+          savedHeight: item.savedHeight || null
+        }));
+
+        if (window.localStorage) {
+          try {
+            localStorage.setItem('imageEditState', JSON.stringify(serializable));
+          } catch (err) {
+            console.warn('Unable to save localStorage state', err);
+          }
+        }
+
+        if (window.indexedDB) {
+          saveImagesToDb(serializable);
+        }
+      }
+
+      function drawWatermark(context, frame) {
+        const selectedType = $('input[name="watermarkType"]:checked').val() || 'logo';
+        const opacity = parseInt(watermarkOpacity.val(), 10) / 100;
+        const footerHeight = 110;
+        const footerTop = frame.height - footerHeight;
+
+        if (selectedType === 'text') {
+          context.save();
+          context.globalAlpha = opacity;
+          context.font = 'bold 28px Arial';
+          context.fillStyle = 'rgba(255,255,255,0.95)';
+          context.textAlign = 'right';
+          const textY = frame.y + frame.height - 30;
+          context.fillText('PebbleNest', frame.x + frame.width - 30, textY);
+          context.restore();
+          return;
+        }
+
+        const watermarkImg = selectedType === 'logoWhite' ? watermarkImages.logoWhite : watermarkImages.logo;
+        if (!watermarkImg) return;
+
+        const targetHeight = 130;
+        const aspectRatio = watermarkImg.width / watermarkImg.height;
+        const targetWidth = targetHeight * aspectRatio;
+        const x = frame.x + frame.width - targetWidth - 40;
+        const y = frame.y + frame.height - targetHeight - 40;
+
+        context.save();
+        context.globalAlpha = opacity;
+        context.drawImage(watermarkImg, x, y, targetWidth, targetHeight);
+        context.restore();
+      }
+
+      function drawTextOverlay(context, width, height, scale = 1) {
+        const nameText = nameInput.val().trim() || 'Name';
+        const priceValue = priceInput.val().trim() || 'Price';
+        const priceText = `₹ ${priceValue}`;
+        const footerHeight = 110 * scale;
+        const textY = height - footerHeight / 2 + 10;
+
+        context.save();
+        context.fillStyle = 'rgba(255,255,255,0.95)';
+        context.fillRect(0, height - footerHeight, width, footerHeight);
+
+        context.font = `bold ${Math.round(40 * scale)}px Arial`;
+        context.fillStyle = '#111';
+        context.textAlign = 'left';
+        context.fillText(nameText, 30, height - footerHeight / 2 + 10);
+
+        context.font = `${Math.round(32 * scale)}px Arial`;
+        context.fillStyle = '#444';
+        context.fillText(priceText, 30, height - 18 / scale + 10 * scale);
+        context.restore();
+      }
+
+      function handleMouseDown(event) {
+        if (!currentImage) return;
+        isDragging = true;
+        dragStartX = event.clientX;
+        dragStartY = event.clientY;
+        dragStartOffsetX = offsetX;
+        dragStartOffsetY = offsetY;
+        previewCanvas.style.cursor = 'grabbing';
+      }
+
+      function handleMouseMove(event) {
+        if (!isDragging || !currentImage) return;
+        offsetX = dragStartOffsetX + (event.clientX - dragStartX);
+        offsetY = dragStartOffsetY + (event.clientY - dragStartY);
+        renderPreview();
+      }
+
+      function handleMouseUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        previewCanvas.style.cursor = 'grab';
+      }
+
+      function handleWheel(event) {
+        if (!currentImage) return;
+        event.preventDefault();
+        const direction = event.deltaY < 0 ? 0.1 : -0.1;
+        zoomLevel = clamp(Number((zoomLevel + direction).toFixed(1)), 0.8, 2.5);
+        zoomRange.val(zoomLevel.toFixed(1));
+        renderPreview();
+      }
+
+      function handleTouchStart(event) {
+        if (!currentImage || event.touches.length === 0) return;
+
+        if (event.touches.length === 2) {
+          event.preventDefault();
+          pinchStartDistance = getTouchDistance(event.touches);
+          pinchStartZoom = zoomLevel;
+          touchStartAxis = 'pinch';
+          return;
+        }
+
+        const touch = event.touches[0];
+        touchStartAxis = null;
+        dragStartX = touch.clientX;
+        dragStartY = touch.clientY;
+        dragStartOffsetX = offsetX;
+        dragStartOffsetY = offsetY;
+      }
+
+      function handleTouchMove(event) {
+        if (!currentImage || event.touches.length === 0) return;
+
+        if (event.touches.length === 2 && pinchStartDistance) {
+          event.preventDefault();
+          const distance = getTouchDistance(event.touches);
+          const ratio = distance / pinchStartDistance;
+          zoomLevel = clamp(Number((pinchStartZoom * ratio).toFixed(1)), 0.8, 2.5);
+          zoomRange.val(zoomLevel.toFixed(1));
+          renderPreview();
+          return;
+        }
+
+        const touch = event.touches[0];
+        const deltaX = touch.clientX - dragStartX;
+        const deltaY = touch.clientY - dragStartY;
+
+        if (!touchStartAxis) {
+          if (Math.abs(deltaX) < 6 && Math.abs(deltaY) < 6) {
+            return;
+          }
+          touchStartAxis = Math.abs(deltaY) > Math.abs(deltaX) ? 'vertical' : 'horizontal';
+        }
+
+        if (touchStartAxis === 'vertical') {
+          return;
+        }
+
+        event.preventDefault();
+        isDragging = true;
+        offsetX = dragStartOffsetX + deltaX;
+        offsetY = dragStartOffsetY + deltaY;
+        renderPreview();
+      }
+
+      function handleTouchEnd(event) {
+        if (event.touches.length >= 2) return;
+        if (!isDragging) return;
+        isDragging = false;
+        pinchStartDistance = null;
+        pinchStartZoom = zoomLevel;
+        previewCanvas.style.cursor = 'grab';
+      }
+
+      function getTouchDistance(touches) {
+        const [first, second] = touches;
+        const dx = second.clientX - first.clientX;
+        const dy = second.clientY - first.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+
+      downloadBtn.on('click', function () {
+        downloadSavedImagesPdf();
+      });
+
+      function getSelectedImage() {
+        return images.find((item) => item.id === selectedImageId);
+      }
+
+      function updateCurrentState() {
+        const selectedItem = getSelectedImage();
+        if (!selectedItem) return;
+        selectedItem.name = nameInput.val().trim();
+        selectedItem.price = priceInput.val().trim();
+        selectedItem.cropType = cropType.val();
+        selectedItem.zoomLevel = zoomLevel;
+        selectedItem.offsetX = offsetX;
+        selectedItem.offsetY = offsetY;
+        renderImageList();
+        saveToStorage();
+      }
+
+      function selectImageById(id) {
+        const item = images.find((image) => image.id === id);
+        if (!item) return;
+        selectedImageId = id;
+        currentImage = item.image;
+        zoomLevel = item.zoomLevel || 1;
+        zoomRange.val(zoomLevel.toFixed(1));
+        cropType.val(item.cropType || 'original');
+        nameInput.val(item.name || '');
+        priceInput.val(item.price || '');
+        if (typeof item.offsetX === 'number' && typeof item.offsetY === 'number') {
+          offsetX = item.offsetX;
+          offsetY = item.offsetY;
+        } else {
+          resetOffset();
+        }
+        renderPreview();
+        renderImageList();
+      }
+
+      function renderImageList() {
+        imageList.empty();
+        images.forEach((item) => {
+          const fileName = item.file?.name || item.fileName || 'Image';
+          const card = $('<div>').addClass('image-card').toggleClass('selected', item.id === selectedImageId);
+          const thumb = $('<img>').attr('src', item.src).attr('alt', fileName);
+          const body = $('<div>').addClass('card-body');
+          const title = $('<p>').addClass('image-title').text(fileName);
+          const subtitle = $('<p>').addClass('image-subtitle').text(item.name || 'Tap to edit');
+          const removeBtn = $('<button>').addClass('close-btn').attr('type', 'button').html('&times;');
+
+          removeBtn.on('click', function (event) {
+            event.stopPropagation();
+            removeUploadedImage(item.id);
+          });
+
+          card.append(removeBtn, thumb, body.append(title, subtitle));
+          card.on('click', function () {
+            selectImageById(item.id);
+          });
+          imageList.append(card);
+        });
+      }
+
+      let draggedSavedId = null;
+
+      function renderSavedGallery() {
+        savedGallery.empty();
+        images.filter((item) => typeof item.savedDataUrl === 'string' && item.savedDataUrl.startsWith('data:image')).forEach((item) => {
+          const card = $('<div>').addClass('saved-card').attr('draggable', true).data('saved-id', item.id);
+          const thumb = $('<img>').attr('src', item.savedDataUrl).attr('alt', item.name || 'Saved image');
+          const body = $('<div>').addClass('saved-body');
+          const title = $('<p>').addClass('saved-title').text(item.name || 'Saved Image');
+          const meta = $('<p>').addClass('saved-meta').text(item.fileName || item.file?.name || 'Uploaded image');
+          const price = $('<p>').addClass('saved-price').text(item.price ? `₹ ${item.price} / piece` : 'Price not set');
+          const actionBar = $('<div>').addClass('action-bar');
+          const downloadActionBtn = $('<button>').attr('type', 'button').text('Download');
+          const removeActionBtn = $('<button>').attr('type', 'button').text('Close');
+          const dragHandle = $('<button>').addClass('drag-handle').attr('type', 'button').text('≡').attr('aria-label', 'Drag to reorder');
+
+          downloadActionBtn.on('click', function () {
+            downloadSavedImage(item);
+          });
+          removeActionBtn.on('click', function () {
+            removeSavedImage(item.id);
+          });
+
+          actionBar.append(downloadActionBtn, removeActionBtn);
+          card.append(thumb, body.append(title, meta, price, actionBar), dragHandle);
+
+          card.on('dragstart', function (event) {
+            draggedSavedId = item.id;
+            event.originalEvent.dataTransfer.effectAllowed = 'move';
+          });
+          card.on('dragover', function (event) {
+            event.preventDefault();
+            $(this).addClass('drag-over');
+            event.originalEvent.dataTransfer.dropEffect = 'move';
+          });
+          card.on('dragleave', function () {
+            $(this).removeClass('drag-over');
+          });
+          card.on('drop', function (event) {
+            event.preventDefault();
+            $(this).removeClass('drag-over');
+            const targetId = $(this).data('saved-id');
+            reorderSavedItems(draggedSavedId, targetId);
+          });
+          card.on('dragend', function () {
+            draggedSavedId = null;
+            $('.saved-card').removeClass('drag-over');
+          });
+
+          savedGallery.append(card);
+        });
+      }
+
+      function saveCurrentImage() {
+        if (!currentImage) {
+          alert('Please upload and select an image first.');
+          return;
+        }
+
+        updateCurrentState();
+
+        const selectedItem = getSelectedImage();
+        if (!selectedItem) return;
+
+        const mode = cropType.val();
+        const targetRatio = getTargetRatio(mode);
+        const exportWidth = 1200;
+        const exportHeight = Math.round(exportWidth / targetRatio);
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = exportWidth;
+        exportCanvas.height = exportHeight;
+        const exportCtx = exportCanvas.getContext('2d');
+
+        const previewFrame = getFrameBounds(900, 900, targetRatio);
+        const previewScale = Math.max(previewFrame.width / currentImage.naturalWidth, previewFrame.height / currentImage.naturalHeight) * zoomLevel;
+        const sourceX = Math.max(0, -offsetX / previewScale);
+        const sourceY = Math.max(0, -offsetY / previewScale);
+        const sourceWidth = Math.min(currentImage.naturalWidth, previewFrame.width / previewScale);
+        const sourceHeight = Math.min(currentImage.naturalHeight, previewFrame.height / previewScale);
+
+        exportCtx.drawImage(
+          currentImage,
+          sourceX,
+          sourceY,
+          sourceWidth,
+          sourceHeight,
+          0,
+          0,
+          exportWidth,
+          exportHeight
+        );
+
+        drawWatermark(exportCtx, {
+          x: 0,
+          y: 0,
+          width: exportWidth,
+          height: exportHeight
+        });
+
+        selectedItem.savedDataUrl = exportCanvas.toDataURL('image/jpeg', 0.8);
+        selectedItem.savedWidth = exportWidth;
+        selectedItem.savedHeight = exportHeight;
+        renderSavedGallery();
+        renderImageList();
+        saveToStorage();
+      }
+
+      function downloadSavedImage(item) {
+        const link = document.createElement('a');
+        link.href = item.savedDataUrl;
+        link.download = `${item.name || 'saved-image'}_${item.price || 'price'}.png`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      function removeUploadedImage(id) {
+        images = images.filter((item) => item.id !== id);
+        if (selectedImageId === id) {
+          selectedImageId = images.length ? images[0].id : null;
+          if (selectedImageId) {
+            selectImageById(selectedImageId);
+          } else {
+            currentImage = null;
+            ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+          }
+        }
+        renderImageList();
+        renderSavedGallery();
+        saveToStorage();
+      }
+
+      function reorderSavedItems(fromId, toId) {
+        if (fromId == null || toId == null || fromId === toId) return;
+        const fromIndex = images.findIndex((item) => item.id === fromId);
+        if (fromIndex < 0) return;
+        const [moved] = images.splice(fromIndex, 1);
+        const targetIndex = images.findIndex((item) => item.id === toId);
+        if (targetIndex < 0) {
+          images.splice(fromIndex, 0, moved);
+          return;
+        }
+        images.splice(targetIndex, 0, moved);
+        renderSavedGallery();
+        saveToStorage();
+      }
+
+      function removeSavedImage(id) {
+        const item = images.find((image) => image.id === id);
+        if (!item) return;
+        item.savedDataUrl = null;
+        renderSavedGallery();
+        saveToStorage();
+      }
+
+      function downloadSavedImagesPdf() {
+        const savedItems = images.filter((item) => typeof item.savedDataUrl === 'string' && item.savedDataUrl.startsWith('data:image'));
+        if (!savedItems.length) {
+          alert('No saved images available to download.');
+          return;
+        }
+
+        const pageWidth = 595;
+        const margin = 20;
+        const headerHeight = 60;
+        const cardPadding = 16;
+        const titleHeight = 36;
+        const priceHeight = 24;
+        const cardContentSpacing = 12;
+        const instagramUrl = 'https://www.instagram.com/pebblenestcreations?utm_source=qr&igsh=MTZmMDh4eXMzZHRtbw==';
+
+        function addCoverFooter() {
+          const footerHeight = 42;
+          const footerY = 842 - margin - footerHeight;
+          const footerText = 'Follow us on Instagram @pebblenestcreations';
+          const textWidth = pdf.getTextWidth(footerText);
+
+          pdf.setFillColor(37, 99, 235);
+          pdf.roundedRect(margin, footerY, pageWidth - margin * 2, footerHeight, 8, 8, 'F');
+
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(255, 255, 255);
+          pdf.text(footerText, pageWidth / 2, footerY + footerHeight / 2 + 4, { align: 'center' });
+          pdf.link((pageWidth - textWidth) / 2, footerY + 6, textWidth, footerHeight - 12, { url: instagramUrl });
+        }
+
+        function computeItemPageHeight(item) {
+          const cardWidth = pageWidth - margin * 2;
+          const imageBoxWidth = cardWidth - cardPadding * 2;
+          const savedWidth = item.savedWidth || imageBoxWidth;
+          const savedHeight = item.savedHeight || savedWidth * 1.18;
+          const aspectRatio = savedWidth && savedHeight ? savedWidth / savedHeight : 0.9;
+          const imageHeight = imageBoxWidth / aspectRatio;
+          const cardHeight = imageHeight + titleHeight + priceHeight + cardPadding * 2 + cardContentSpacing;
+          return cardHeight + margin * 2;
+        }
+
+        function setPageSize(pageHeight) {
+          if (!pdf || !pdf.internal || !pdf.internal.pageSize) return;
+          pdf.internal.pageSize.width = pageWidth;
+          pdf.internal.pageSize.height = pageHeight;
+          pdf.internal.pageSize.getWidth = function () {
+            return pageWidth;
+          };
+          pdf.internal.pageSize.getHeight = function () {
+            return pageHeight;
+          };
+        }
+
+        function addItemPage(item, firstPage = false) {
+          const pageHeight = computeItemPageHeight(item);
+          if (!firstPage) {
+            pdf.addPage();
+          }
+          setPageSize(pageHeight);
+
+          const cardX = margin;
+          const cardY = margin;
+          const cardWidth = pageWidth - margin * 2;
+          const imageBoxWidth = cardWidth - cardPadding * 2;
+          const savedWidth = item.savedWidth || imageBoxWidth;
+          const savedHeight = item.savedHeight || savedWidth * 1.18;
+          const aspectRatio = savedWidth && savedHeight ? savedWidth / savedHeight : 0.9;
+          const imageWidth = imageBoxWidth;
+          const imageHeight = imageWidth / aspectRatio;
+          const cardHeight = imageHeight + titleHeight + priceHeight + cardPadding * 2 + cardContentSpacing;
+          const imageY = cardY + cardPadding;
+
+          pdf.setDrawColor(220, 225, 230);
+          pdf.setLineWidth(0.8);
+          pdf.roundedRect(cardX, cardY, cardWidth, cardHeight, 10, 10, 'S');
+          pdf.addImage(item.savedDataUrl, 'PNG', cardX + cardPadding, imageY, imageWidth, imageHeight);
+
+          const titleY = imageY + imageHeight + cardContentSpacing + titleHeight / 2;
+          pdf.setFontSize(14);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(34, 34, 34);
+          const titleText = item.name || 'Product Name';
+          pdf.text(titleText, cardX + cardWidth / 2, titleY, { align: 'center' });
+
+          const separatorY = titleY + 10;
+          pdf.setDrawColor(170, 180, 190);
+          pdf.setLineWidth(0.5);
+          pdf.line(cardX + cardPadding, separatorY, cardX + cardWidth - cardPadding, separatorY);
+
+          const priceValue = item.price ? item.price : '0';
+          const suffixText = '/ piece';
+          pdf.setFontSize(16);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(0, 0, 0);
+
+          const iconHeight = 14;
+          const iconWidth = rupeeIconImage ? (rupeeIconImage.width / rupeeIconImage.height) * iconHeight : 0;
+          const rupeeValueText = priceValue.toString();
+          const rupeeValueWidth = pdf.getTextWidth(rupeeValueText);
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'normal');
+          const suffixWidth = pdf.getTextWidth(suffixText);
+          const totalWidth = iconWidth + (iconWidth ? 6 : 0) + rupeeValueWidth + 6 + suffixWidth;
+          let priceX = cardX + (cardWidth - totalWidth) / 2;
+          const priceY = separatorY + priceHeight;
+
+          pdf.setFontSize(16);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(0, 0, 0);
+          if (rupeeIconImage) {
+            pdf.addImage(rupeeIconImage, 'PNG', priceX, priceY - iconHeight + 3, iconWidth, iconHeight);
+            priceX += iconWidth + 6;
+          }
+
+          pdf.text(rupeeValueText, priceX, priceY);
+          priceX += rupeeValueWidth + 6;
+
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(113, 128, 150);
+          pdf.text(suffixText, priceX, priceY);
+        }
+
+        let pdf;
+        let startIndex = 0;
+        if (coverImage) {
+          pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [pageWidth, 842] });
+          const footerHeight = 56;
+          const coverMaxWidth = pageWidth - margin * 2;
+          const coverMaxHeight = 842 - margin * 2 - footerHeight;
+          const coverAspect = coverImage.width / coverImage.height;
+          let coverWidth = coverMaxWidth;
+          let coverHeight = coverWidth / coverAspect;
+          if (coverHeight > coverMaxHeight) {
+            coverHeight = coverMaxHeight;
+            coverWidth = coverHeight * coverAspect;
+          }
+          const coverX = (pageWidth - coverWidth) / 2;
+          const coverY = margin;
+          pdf.addImage(coverImage, 'JPEG', coverX, coverY, coverWidth, coverHeight);
+          addCoverFooter();
+          startIndex = 0;
+        } else {
+          pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [pageWidth, computeItemPageHeight(savedItems[0])] });
+          addItemPage(savedItems[0], true);
+          startIndex = 1;
+        }
+
+        for (let i = startIndex; i < savedItems.length; i++) {
+          addItemPage(savedItems[i], !coverImage && i === 0);
+        }
+
+        pdf.save('saved-images.pdf');
+      }
+    });
+  </script>
+</body>
+</html>
