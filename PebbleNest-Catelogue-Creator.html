@@ -244,14 +244,14 @@
 
     .saved-card .saved-title {
       margin: 0;
-      font-size: 28px;
+      font-size: 20px;
       font-weight: 700;
       color: #111827;
     }
 
     .saved-card .saved-price {
       margin: 0;
-      font-size: 25px;
+      font-size: 20px;
       color: #2563eb;
       font-weight: 700;
     }
@@ -1408,22 +1408,22 @@
 
           const priceValue = item.price ? item.price : '0';
           const suffixText = '/ piece';
-          pdf.setFontSize(20);
+          pdf.setFontSize(28);
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(0, 0, 0);
 
-          const iconHeight = 14;
+          const iconHeight = 20;
           const iconWidth = rupeeIconImage ? (rupeeIconImage.width / rupeeIconImage.height) * iconHeight : 0;
           const rupeeValueText = priceValue.toString();
           const rupeeValueWidth = pdf.getTextWidth(rupeeValueText);
-          pdf.setFontSize(14);
+          pdf.setFontSize(24);
           pdf.setFont('helvetica', 'normal');
           const suffixWidth = pdf.getTextWidth(suffixText);
           const totalWidth = iconWidth + (iconWidth ? 6 : 0) + rupeeValueWidth + 6 + suffixWidth;
           let priceX = cardX + (cardWidth - totalWidth) / 2;
           const priceY = separatorY + priceHeight;
 
-          pdf.setFontSize(20);
+          pdf.setFontSize(28);
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(0, 0, 0);
           if (rupeeIconImage) {
