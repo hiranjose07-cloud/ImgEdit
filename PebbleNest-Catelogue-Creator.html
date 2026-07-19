@@ -1326,9 +1326,9 @@
         const margin = 20;
         const headerHeight = 60;
         const cardPadding = 16;
-        const titleHeight = 36;
-        const priceHeight = 24;
-        const cardContentSpacing = 12;
+        const titleHeight = 44;
+        const priceHeight = 34;
+        const cardContentSpacing = 14;
         const instagramUrl = 'https://www.instagram.com/pebblenestcreations?utm_source=qr&igsh=MTZmMDh4eXMzZHRtbw==';
 
         function addCoverFooter() {
@@ -1395,20 +1395,20 @@
           pdf.addImage(item.savedDataUrl, 'PNG', cardX + cardPadding, imageY, imageWidth, imageHeight);
 
           const titleY = imageY + imageHeight + cardContentSpacing + titleHeight / 2;
-          pdf.setFontSize(14);
+          pdf.setFontSize(20);
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(34, 34, 34);
           const titleText = item.name || 'Product Name';
           pdf.text(titleText, cardX + cardWidth / 2, titleY, { align: 'center' });
 
-          const separatorY = titleY + 10;
+          const separatorY = titleY + 12;
           pdf.setDrawColor(170, 180, 190);
           pdf.setLineWidth(0.5);
           pdf.line(cardX + cardPadding, separatorY, cardX + cardWidth - cardPadding, separatorY);
 
           const priceValue = item.price ? item.price : '0';
           const suffixText = '/ piece';
-          pdf.setFontSize(16);
+          pdf.setFontSize(20);
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(0, 0, 0);
 
@@ -1416,14 +1416,14 @@
           const iconWidth = rupeeIconImage ? (rupeeIconImage.width / rupeeIconImage.height) * iconHeight : 0;
           const rupeeValueText = priceValue.toString();
           const rupeeValueWidth = pdf.getTextWidth(rupeeValueText);
-          pdf.setFontSize(12);
+          pdf.setFontSize(14);
           pdf.setFont('helvetica', 'normal');
           const suffixWidth = pdf.getTextWidth(suffixText);
           const totalWidth = iconWidth + (iconWidth ? 6 : 0) + rupeeValueWidth + 6 + suffixWidth;
           let priceX = cardX + (cardWidth - totalWidth) / 2;
           const priceY = separatorY + priceHeight;
 
-          pdf.setFontSize(16);
+          pdf.setFontSize(20);
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(0, 0, 0);
           if (rupeeIconImage) {
