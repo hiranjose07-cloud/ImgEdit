@@ -72,6 +72,14 @@
       text-align: center;
     }
 
+    .preview-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
     canvas {
       max-width: 100%;
       width: 100%;
@@ -149,7 +157,12 @@
       font-size: 18px;
     }
 
-    .image-list,
+    .image-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+    }
+
     .saved-gallery {
       display: grid;
       grid-template-columns: 1fr;
@@ -163,6 +176,7 @@
       background: #fff;
       cursor: pointer;
       transition: box-shadow 0.2s ease, transform 0.2s ease;
+      min-height: 160px;
     }
 
     .image-card.selected {
@@ -173,7 +187,7 @@
     .image-card img {
       width: 100%;
       display: block;
-      height: 140px;
+      height: 110px;
       object-fit: cover;
     }
 
@@ -419,29 +433,6 @@
         <label for="priceInput">Price</label>
         <input type="text" id="priceInput" placeholder="Enter price" />
       </div>
-
-      <div>
-        <label>&nbsp;</label>
-        <div style="display:flex; gap:10px; flex-wrap: wrap;">
-          <button type="button" id="downloadBtn">Download PDF</button>
-          <button type="button" id="saveBtn">Save Image</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="watermark-controls">
-      <strong>Watermark</strong>
-      <label><input type="radio" name="watermarkType" value="logo" checked /> Logo dark</label>
-      <label><input type="radio" name="watermarkType" value="logoWhite" /> Logo light</label>
-      <label><input type="radio" name="watermarkType" value="text" /> PebbleNest Text</label>
-      <label>Opacity <input type="range" id="watermarkOpacity" min="0" max="100" value="60" /></label>
-    </div>
-
-    <div class="zoom-controls">
-      <strong>Zoom</strong>
-      <button type="button" id="zoomOutBtn">−</button>
-      <input type="range" id="zoomRange" min="0.8" max="2.5" step="0.1" value="1" />
-      <button type="button" id="zoomInBtn">+</button>
     </div>
 
     <div class="gallery-section">
@@ -452,6 +443,10 @@
     <div class="preview-box">
       <canvas id="previewCanvas"></canvas>
       <div class="hint">Choose an image, select a crop type, enter name and price, then save or download.</div>
+      <div class="preview-actions">
+        <button type="button" id="saveBtn">Save Image</button>
+        <button type="button" id="downloadBtn">Download PDF</button>
+      </div>
     </div>
 
     <div class="gallery-section">
@@ -955,11 +950,11 @@
         const watermarkImg = selectedType === 'logoWhite' ? watermarkImages.logoWhite : watermarkImages.logo;
         if (!watermarkImg) return;
 
-        const targetHeight = 100;
+        const targetHeight = 130;
         const aspectRatio = watermarkImg.width / watermarkImg.height;
         const targetWidth = targetHeight * aspectRatio;
-        const x = frame.x + frame.width - targetWidth - 30;
-        const y = frame.y + frame.height - targetHeight - 30;
+        const x = frame.x + frame.width - targetWidth - 40;
+        const y = frame.y + frame.height - targetHeight - 40;
 
         context.save();
         context.globalAlpha = opacity;
@@ -1320,32 +1315,13 @@
         }
 
         const pageWidth = 595;
-        const pageHeight = 842;
         const margin = 20;
-        const headerHeight = 50;
-        const imageWidth = (pageWidth - margin * 3) / 2;
-        const cardPadding = 10;
+        const headerHeight = 60;
+        const cardPadding = 16;
         const titleHeight = 36;
         const priceHeight = 24;
-        const cardContentSpacing = 8;
+        const cardContentSpacing = 12;
         const instagramUrl = 'https://www.instagram.com/pebblenestcreations?utm_source=qr&igsh=MTZmMDh4eXMzZHRtbw==';
-
-        let pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [pageWidth, pageHeight] });
-
-        if (coverImage) {
-          const coverMaxWidth = pageWidth - margin * 2;
-          const coverMaxHeight = pageHeight - margin * 2;
-          const coverAspect = coverImage.width / coverImage.height;
-          let coverWidth = coverMaxWidth;
-          let coverHeight = coverWidth / coverAspect;
-          if (coverHeight > coverMaxHeight) {
-            coverHeight = coverMaxHeight;
-            coverWidth = coverHeight * coverAspect;
-          }
-          const coverX = (pageWidth - coverWidth) / 2;
-          const coverY = (pageHeight - coverHeight) / 2;
-          pdf.addImage(coverImage, 'JPEG', coverX, coverY, coverWidth, coverHeight);
-        }
 
         function addSectionHeader() {
           pdf.setFontSize(12);
@@ -1357,51 +1333,73 @@
           pdf.setFont('helvetica', 'normal');
           pdf.setTextColor(0, 102, 204);
           const instaLinkText = 'Click to go Pebblenest Instagram page';
-          pdf.text(instaLinkText, margin, margin + 16);
-          pdf.link(margin, margin + 6, pdf.getTextWidth(instaLinkText), 12, { url: instagramUrl });
+          pdf.text(instaLinkText, margin, margin + 18);
+          pdf.link(margin, margin + 8, pdf.getTextWidth(instaLinkText), 12, { url: instagramUrl });
 
           pdf.setDrawColor(200, 210, 220);
           pdf.setLineWidth(0.5);
-          pdf.line(margin, margin + 22, pageWidth - margin, margin + 22);
+          pdf.line(margin, margin + 24, pageWidth - margin, margin + 24);
         }
 
-        let x = margin;
-        let y = margin + headerHeight;
-
-        pdf.addPage([pageWidth, pageHeight]);
-        addSectionHeader();
-
-        savedItems.forEach((item, index) => {
-          const savedWidth = item.savedWidth || imageWidth * 0.9;
-          const savedHeight = item.savedHeight || imageWidth * 1.2;
+        function computeItemPageHeight(item) {
+          const cardWidth = pageWidth - margin * 2;
+          const imageBoxWidth = cardWidth - cardPadding * 2;
+          const savedWidth = item.savedWidth || imageBoxWidth;
+          const savedHeight = item.savedHeight || savedWidth * 1.18;
           const aspectRatio = savedWidth && savedHeight ? savedWidth / savedHeight : 0.9;
-          const imageHeight = Math.min(imageWidth * 1.18, imageWidth / aspectRatio);
+          const imageHeight = imageBoxWidth / aspectRatio;
           const cardHeight = imageHeight + titleHeight + priceHeight + cardPadding * 2 + cardContentSpacing;
-          const imageY = y + cardPadding;
+          return cardHeight + margin * 2 + headerHeight;
+        }
 
-          if (y + cardHeight + margin > pageHeight) {
-            pdf.addPage([pageWidth, pageHeight]);
-            addSectionHeader();
-            x = margin;
-            y = margin + headerHeight;
+        function setPageSize(pageHeight) {
+          if (!pdf || !pdf.internal || !pdf.internal.pageSize) return;
+          pdf.internal.pageSize.width = pageWidth;
+          pdf.internal.pageSize.height = pageHeight;
+          pdf.internal.pageSize.getWidth = function () {
+            return pageWidth;
+          };
+          pdf.internal.pageSize.getHeight = function () {
+            return pageHeight;
+          };
+        }
+
+        function addItemPage(item, firstPage = false) {
+          const pageHeight = computeItemPageHeight(item);
+          if (!firstPage) {
+            pdf.addPage();
           }
+          setPageSize(pageHeight);
+
+          addSectionHeader();
+          const cardX = margin;
+          const cardY = margin + headerHeight;
+          const cardWidth = pageWidth - margin * 2;
+          const imageBoxWidth = cardWidth - cardPadding * 2;
+          const savedWidth = item.savedWidth || imageBoxWidth;
+          const savedHeight = item.savedHeight || savedWidth * 1.18;
+          const aspectRatio = savedWidth && savedHeight ? savedWidth / savedHeight : 0.9;
+          const imageWidth = imageBoxWidth;
+          const imageHeight = imageWidth / aspectRatio;
+          const cardHeight = imageHeight + titleHeight + priceHeight + cardPadding * 2 + cardContentSpacing;
+          const imageY = cardY + cardPadding;
 
           pdf.setDrawColor(220, 225, 230);
           pdf.setLineWidth(0.8);
-          pdf.roundedRect(x, y, imageWidth, cardHeight, 10, 10, 'S');
-          pdf.addImage(item.savedDataUrl, 'PNG', x + cardPadding, imageY, imageWidth - cardPadding * 2, imageHeight);
+          pdf.roundedRect(cardX, cardY, cardWidth, cardHeight, 10, 10, 'S');
+          pdf.addImage(item.savedDataUrl, 'PNG', cardX + cardPadding, imageY, imageWidth, imageHeight);
 
           const titleY = imageY + imageHeight + cardContentSpacing + titleHeight / 2;
           pdf.setFontSize(14);
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(34, 34, 34);
           const titleText = item.name || 'Product Name';
-          pdf.text(titleText, x + imageWidth / 2, titleY, { align: 'center' });
+          pdf.text(titleText, cardX + cardWidth / 2, titleY, { align: 'center' });
 
           const separatorY = titleY + 10;
           pdf.setDrawColor(170, 180, 190);
           pdf.setLineWidth(0.5);
-          pdf.line(x + cardPadding, separatorY, x + imageWidth - cardPadding, separatorY);
+          pdf.line(cardX + cardPadding, separatorY, cardX + cardWidth - cardPadding, separatorY);
 
           const priceValue = item.price ? item.price : '0';
           const suffixText = '/ piece';
@@ -1417,7 +1415,7 @@
           pdf.setFont('helvetica', 'normal');
           const suffixWidth = pdf.getTextWidth(suffixText);
           const totalWidth = iconWidth + (iconWidth ? 6 : 0) + rupeeValueWidth + 6 + suffixWidth;
-          let priceX = x + (imageWidth - totalWidth) / 2;
+          let priceX = cardX + (cardWidth - totalWidth) / 2;
           const priceY = separatorY + priceHeight;
 
           pdf.setFontSize(16);
@@ -1435,14 +1433,34 @@
           pdf.setFont('helvetica', 'normal');
           pdf.setTextColor(113, 128, 150);
           pdf.text(suffixText, priceX, priceY);
+        }
 
-          if ((index + 1) % 2 === 0) {
-            x = margin;
-            y += cardHeight + margin;
-          } else {
-            x += imageWidth + margin;
+        let pdf;
+        let startIndex = 0;
+        if (coverImage) {
+          pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [pageWidth, 842] });
+          const coverMaxWidth = pageWidth - margin * 2;
+          const coverMaxHeight = 842 - margin * 2;
+          const coverAspect = coverImage.width / coverImage.height;
+          let coverWidth = coverMaxWidth;
+          let coverHeight = coverWidth / coverAspect;
+          if (coverHeight > coverMaxHeight) {
+            coverHeight = coverMaxHeight;
+            coverWidth = coverHeight * coverAspect;
           }
-        });
+          const coverX = (pageWidth - coverWidth) / 2;
+          const coverY = (842 - coverHeight) / 2;
+          pdf.addImage(coverImage, 'JPEG', coverX, coverY, coverWidth, coverHeight);
+          startIndex = 0;
+        } else {
+          pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [pageWidth, computeItemPageHeight(savedItems[0])] });
+          addItemPage(savedItems[0], true);
+          startIndex = 1;
+        }
+
+        for (let i = startIndex; i < savedItems.length; i++) {
+          addItemPage(savedItems[i], !coverImage && i === 0);
+        }
 
         pdf.save('saved-images.pdf');
       }
