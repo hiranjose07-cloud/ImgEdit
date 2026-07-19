@@ -495,6 +495,12 @@
         <label for="priceInput">Price</label>
         <input type="text" id="priceInput" placeholder="Enter price" />
       </div>
+
+      <div>
+        <label for="fixedPriceCheckbox">
+          <input type="checkbox" id="fixedPriceCheckbox" /> Fixed price (no ₹ / no unit)
+        </label>
+      </div>
     </div>
 
     
@@ -556,6 +562,7 @@
       const cropType = $('#cropType');
       const nameInput = $('#nameInput');
       const priceInput = $('#priceInput');
+      const fixedPriceCheckbox = $('#fixedPriceCheckbox');
       const downloadBtn = $('#downloadBtn');
       const previewCanvas = $('#previewCanvas')[0];
       const ctx = previewCanvas.getContext('2d');
@@ -660,6 +667,10 @@
         renderPreview();
       });
       priceInput.on('input', function () {
+        updateCurrentState();
+        renderPreview();
+      });
+      fixedPriceCheckbox.on('change', function () {
         updateCurrentState();
         renderPreview();
       });
@@ -953,6 +964,7 @@
               image: null,
               name: item.name || '',
               price: item.price || '',
+              fixedPrice: item.fixedPrice || false,
               cropType: item.cropType || 'original',
               zoomLevel: item.zoomLevel || 1,
               offsetX: item.offsetX || 0,
@@ -1004,6 +1016,7 @@
             src: item.src,
             name: item.name || '',
             price: item.price || '',
+            fixedPrice: item.fixedPrice || false,
             cropType: item.cropType || 'original',
             zoomLevel: item.zoomLevel || 1,
             offsetX: item.offsetX || 0,
@@ -1091,13 +1104,13 @@
         return size;
       }
 
-      function drawTextFooter(context, width, imageHeight, footerHeight, nameText, priceValue) {
+      function drawTextFooter(context, width, imageHeight, footerHeight, nameText, priceValue, fixedPrice = false) {
         const resolvedName = nameText || 'Name';
         const resolvedPrice = priceValue || 'Price';
-        const priceText = `₹ ${resolvedPrice}`;
+        const priceText = fixedPrice ? resolvedPrice : `₹ ${resolvedPrice}`;
         const padding = 30;
         const baseTitleFontSize = 65;
-        const priceFontSize = 60;
+        const priceFontSize = 50;
         const suffixFontSize = 50;
         const separatorGap = 0;
         const priceGap = 10;
@@ -1134,11 +1147,11 @@
         context.font = `${priceFontSize}px Arial`;
         const priceMetrics = context.measureText(priceText);
 
-        const suffix = ' / Piece';
+        const suffix = fixedPrice ? '' : ' / Piece';
         context.font = `${suffixFontSize}px Arial`;
-        const suffixMetrics = context.measureText(suffix);
+        const suffixMetrics = fixedPrice ? { width: 0 } : context.measureText(suffix);
 
-        const gapBetween = 12;
+        const gapBetween = fixedPrice ? 0 : 12;
         const groupWidth = priceMetrics.width + suffixMetrics.width + gapBetween;
         const groupStartX = width / 2 - groupWidth / 2;
 
@@ -1147,9 +1160,11 @@
         context.fillStyle = '#111';
         context.fillText(priceText, groupStartX, priceCenter);
 
-        context.font = `${suffixFontSize}px Arial`;
-        context.fillStyle = 'rgba(17,24,39,0.7)';
-        context.fillText(suffix, groupStartX + priceMetrics.width + gapBetween, priceCenter);
+        if (!fixedPrice) {
+          context.font = `${suffixFontSize}px Arial`;
+          context.fillStyle = 'rgba(17,24,39,0.7)';
+          context.fillText(suffix, groupStartX + priceMetrics.width + gapBetween, priceCenter);
+        }
 
         context.restore();
       }
@@ -1267,6 +1282,7 @@
         if (!selectedItem) return;
         selectedItem.name = nameInput.val().trim();
         selectedItem.price = priceInput.val().trim();
+        selectedItem.fixedPrice = fixedPriceCheckbox.is(':checked');
         selectedItem.cropType = cropType.val();
         selectedItem.zoomLevel = zoomLevel;
         selectedItem.offsetX = offsetX;
@@ -1285,6 +1301,7 @@
         cropType.val(item.cropType || 'original');
         nameInput.val(item.name || '');
         priceInput.val(item.price || '');
+        fixedPriceCheckbox.prop('checked', !!item.fixedPrice);
         if (typeof item.offsetX === 'number' && typeof item.offsetY === 'number') {
           offsetX = item.offsetX;
           offsetY = item.offsetY;
@@ -1370,7 +1387,7 @@
           height: imageHeight
         });
 
-        drawTextFooter(exportCtx, exportWidth, imageHeight, footerHeight, selectedItem.name, selectedItem.price);
+        drawTextFooter(exportCtx, exportWidth, imageHeight, footerHeight, selectedItem.name, selectedItem.price, selectedItem.fixedPrice);
 
         const savedDataUrl = exportCanvas.toDataURL('image/jpeg', 0.9);
 
