@@ -152,7 +152,7 @@
     .image-list,
     .saved-gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: 1fr;
       gap: 16px;
     }
 
@@ -195,36 +195,83 @@
     }
 
     .saved-card {
-      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       border: 1px solid #e2e8f0;
       border-radius: 14px;
       overflow: hidden;
       background: #fff;
+      padding: 12px;
+      min-height: 130px;
+    }
+
+    .saved-card.drag-over {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
     }
 
     .saved-card img {
-      width: 100%;
-      display: block;
-      height: 180px;
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
       object-fit: cover;
+      border-radius: 12px;
     }
 
     .saved-card .saved-body {
-      padding: 12px;
+      padding: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
     }
 
     .saved-card .saved-title {
       margin: 0;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       color: #111827;
     }
 
     .saved-card .saved-price {
-      margin: 6px 0 0;
+      margin: 0;
       font-size: 14px;
       color: #2563eb;
       font-weight: 700;
+    }
+
+    .saved-card .saved-meta {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    .saved-card .action-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .drag-handle {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 18px;
+      cursor: grab;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
     }
 
     .image-card {
@@ -1109,22 +1156,22 @@
         });
       }
 
+      let draggedSavedId = null;
+
       function renderSavedGallery() {
         savedGallery.empty();
         images.filter((item) => typeof item.savedDataUrl === 'string' && item.savedDataUrl.startsWith('data:image')).forEach((item) => {
-          const card = $('<div>').addClass('saved-card');
+          const card = $('<div>').addClass('saved-card').attr('draggable', true).data('saved-id', item.id);
           const thumb = $('<img>').attr('src', item.savedDataUrl).attr('alt', item.name || 'Saved image');
-          const closeBtn = $('<button>').addClass('close-btn').attr('type', 'button').html('&times;');
           const body = $('<div>').addClass('saved-body');
           const title = $('<p>').addClass('saved-title').text(item.name || 'Saved Image');
+          const meta = $('<p>').addClass('saved-meta').text(item.fileName || item.file?.name || 'Uploaded image');
           const price = $('<p>').addClass('saved-price').text(item.price ? `₹ ${item.price} / piece` : 'Price not set');
           const actionBar = $('<div>').addClass('action-bar');
           const downloadActionBtn = $('<button>').attr('type', 'button').text('Download');
           const removeActionBtn = $('<button>').attr('type', 'button').text('Close');
+          const dragHandle = $('<button>').addClass('drag-handle').attr('type', 'button').text('≡').attr('aria-label', 'Drag to reorder');
 
-          closeBtn.on('click', function () {
-            removeSavedImage(item.id);
-          });
           downloadActionBtn.on('click', function () {
             downloadSavedImage(item);
           });
@@ -1133,7 +1180,31 @@
           });
 
           actionBar.append(downloadActionBtn, removeActionBtn);
-          card.append(closeBtn, thumb, body.append(title, price, actionBar));
+          card.append(thumb, body.append(title, meta, price, actionBar), dragHandle);
+
+          card.on('dragstart', function (event) {
+            draggedSavedId = item.id;
+            event.originalEvent.dataTransfer.effectAllowed = 'move';
+          });
+          card.on('dragover', function (event) {
+            event.preventDefault();
+            $(this).addClass('drag-over');
+            event.originalEvent.dataTransfer.dropEffect = 'move';
+          });
+          card.on('dragleave', function () {
+            $(this).removeClass('drag-over');
+          });
+          card.on('drop', function (event) {
+            event.preventDefault();
+            $(this).removeClass('drag-over');
+            const targetId = $(this).data('saved-id');
+            reorderSavedItems(draggedSavedId, targetId);
+          });
+          card.on('dragend', function () {
+            draggedSavedId = null;
+            $('.saved-card').removeClass('drag-over');
+          });
+
           savedGallery.append(card);
         });
       }
@@ -1214,6 +1285,21 @@
           }
         }
         renderImageList();
+        renderSavedGallery();
+        saveToStorage();
+      }
+
+      function reorderSavedItems(fromId, toId) {
+        if (fromId == null || toId == null || fromId === toId) return;
+        const fromIndex = images.findIndex((item) => item.id === fromId);
+        if (fromIndex < 0) return;
+        const [moved] = images.splice(fromIndex, 1);
+        const targetIndex = images.findIndex((item) => item.id === toId);
+        if (targetIndex < 0) {
+          images.splice(fromIndex, 0, moved);
+          return;
+        }
+        images.splice(targetIndex, 0, moved);
         renderSavedGallery();
         saveToStorage();
       }
