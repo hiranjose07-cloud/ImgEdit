@@ -1,0 +1,1420 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Editor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 24px;
+      color: #222;
+    }
+
+    .card {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #1f3d6d;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .controls div {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input, select, button {
+      padding: 10px 12px;
+      border: 1px solid #cfd8e3;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .preview-box {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 16px;
+      background: #fafafa;
+      text-align: left;
+    }
+
+    .preview-inner {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .preview-controls {
+      display: grid;
+      gap: 14px;
+    }
+
+    .canvas-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .preview-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    canvas {
+      max-width: 100%;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      background: #fff;
+      cursor: grab;
+      touch-action: pan-y pinch-zoom;
+    }
+
+    .hint {
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .watermark-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin: 16px 0 12px;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    .watermark-controls label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .watermark-controls input[type="range"] {
+      width: 140px;
+      padding: 0;
+    }
+
+    .zoom-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin: 12px 0 16px;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    .zoom-controls button {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      font-size: 20px;
+      font-weight: 700;
+      border-radius: 999px;
+    }
+
+    .zoom-controls input[type="range"] {
+      width: 180px;
+      padding: 0;
+    }
+
+    .gallery-section {
+      margin-top: 24px;
+    }
+
+    .gallery-section h3 {
+      margin: 0 0 12px;
+      color: #1f3d6d;
+      font-size: 18px;
+    }
+
+    .image-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+    }
+
+    .saved-gallery {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .image-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+      cursor: pointer;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+      min-height: 160px;
+    }
+
+    .image-card.selected {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.24);
+      transform: translateY(-1px);
+    }
+
+    .image-card img {
+      width: 100%;
+      display: block;
+      height: 110px;
+      object-fit: cover;
+    }
+
+    .image-card .card-body {
+      padding: 10px 12px;
+    }
+
+    .image-card .image-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f3d6d;
+    }
+
+    .image-card .image-subtitle {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .saved-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+      padding: 12px;
+      min-height: 130px;
+    }
+
+    .saved-card.drag-over {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .saved-card img {
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .saved-card .saved-body {
+      padding: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .saved-card .saved-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .saved-card .saved-price {
+      margin: 0;
+      font-size: 20px;
+      color: #2563eb;
+      font-weight: 700;
+    }
+
+    .saved-card .saved-meta {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    .saved-card .action-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .drag-handle {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 18px;
+      cursor: grab;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .image-card {
+      position: relative;
+    }
+
+    .image-card .close-btn,
+    .saved-card .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: rgba(17,24,39,0.8);
+      color: white;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .saved-card .action-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .saved-card .action-bar button {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #111827;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 14px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .controls div {
+        width: 100%;
+      }
+
+      .controls label {
+        font-size: 15px;
+      }
+
+      .controls input,
+      .controls select,
+      .preview-actions button {
+        font-size: 16px;
+        padding: 14px 16px;
+      }
+
+      .preview-actions {
+        justify-content: stretch;
+      }
+
+      .preview-actions button {
+        width: 100%;
+        border-radius: 12px;
+      }
+
+      .watermark-controls,
+      .zoom-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .watermark-controls label,
+      .zoom-controls button,
+      .zoom-controls input[type="range"] {
+        width: 100%;
+      }
+
+      .watermark-controls input[type="range"] {
+        width: 100%;
+      }
+
+      .zoom-controls input[type="range"] {
+        width: 100%;
+      }
+
+      .preview-box {
+        padding: 12px;
+      }
+
+      .image-card img {
+        height: 130px;
+      }
+
+      .saved-card img {
+        height: 140px;
+      }
+
+      .saved-card .saved-title {
+        font-size: 27px;
+      }
+
+      .saved-card .saved-price {
+        font-size: 25px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .card {
+        padding: 14px;
+      }
+
+      .controls {
+        gap: 14px;
+      }
+
+      .controls input,
+      .controls select,
+      .preview-actions button {
+        font-size: 17px;
+        padding: 16px 18px;
+      }
+
+      .preview-actions button {
+        width: 100%;
+      }
+
+      .watermark-controls,
+      .zoom-controls {
+        gap: 12px;
+      }
+
+      .saved-card .action-bar,
+      .watermark-controls,
+      .zoom-controls {
+        padding: 10px;
+      }
+
+      .image-card img {
+        height: 120px;
+      }
+
+      .saved-card img {
+        height: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Image Crop & Download</h2>
+
+    <div class="controls">
+      <div>
+        <label for="imageUpload">Upload Images</label>
+        <input type="file" id="imageUpload" accept="image/*" multiple />
+      </div>
+
+      <div>
+        <label for="cropType">Crop Option</label>
+        <select id="cropType">
+          <option value="original">Original</option>
+          <option value="landscape">Landscape (4:3)</option>
+          <option value="portrait">Portrait (3:4)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="nameInput">Name</label>
+        <input type="text" id="nameInput" placeholder="Enter name" />
+      </div>
+
+      <div>
+        <label for="priceInput">Price</label>
+        <input type="text" id="priceInput" placeholder="Enter price" />
+      </div>
+    </div>
+
+    
+
+    <div class="gallery-section">
+      <h3>Uploaded Images</h3>
+      <div class="image-list" id="imageList"></div>
+    </div>
+
+    <div class="preview-box">
+        <div class="preview-inner">
+          <div class="preview-controls">
+            <div class="watermark-controls">
+              <label>
+                <input type="radio" name="watermarkType" value="logo" checked />
+                Logo watermark
+              </label>
+              <label>
+                <input type="radio" name="watermarkType" value="logoWhite" />
+                White watermark
+              </label>
+              <label>
+                <input type="radio" name="watermarkType" value="text" />
+                PebbleNest
+              </label>
+              <label for="watermarkOpacity">
+                Opacity
+                <input type="range" id="watermarkOpacity" min="10" max="100" step="5" value="60" />
+              </label>
+            </div>
+
+            <div class="zoom-controls">
+              <button type="button" id="zoomOutBtn">-</button>
+              <label for="zoomRange">Zoom</label>
+              <input type="range" id="zoomRange" min="0.8" max="2.5" step="0.1" value="1" />
+              <button type="button" id="zoomInBtn">+</button>
+            </div>
+
+            <div class="hint">Choose an image, select a crop type, enter name and price, then save or download.</div>
+          </div>
+
+          <div class="canvas-wrapper">
+            <canvas id="previewCanvas"></canvas>
+          </div>
+        </div>
+
+        <div class="preview-actions">
+          <button type="button" id="saveBtn">Save Image</button>
+        </div>
+      </div>
+    
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    $(function () {
+      const imageUpload = $('#imageUpload');
+      const cropType = $('#cropType');
+      const nameInput = $('#nameInput');
+      const priceInput = $('#priceInput');
+      const downloadBtn = $('#downloadBtn');
+      const previewCanvas = $('#previewCanvas')[0];
+      const ctx = previewCanvas.getContext('2d');
+      const watermarkTypeInputs = $('input[name="watermarkType"]');
+      const watermarkOpacity = $('#watermarkOpacity');
+      const zoomRange = $('#zoomRange');
+      const zoomInBtn = $('#zoomInBtn');
+      const zoomOutBtn = $('#zoomOutBtn');
+      const saveBtn = $('#saveBtn');
+      const imageList = $('#imageList');
+      const stockGalleryEl = $('#stockGallery');
+      const savedGallery = $('#savedGallery');
+      let stockImages = [];
+      const { jsPDF } = window.jspdf;
+      let currentImage = null;
+      let selectedImageId = null;
+      let uploadedImages = [];
+      let watermarkImages = { logo: null, logoWhite: null };
+      let rupeeIconImage = null;
+      let coverImage = null;
+      let offsetX = 0;
+      let offsetY = 0;
+      let isDragging = false;
+      let dragStartX = 0;
+      // stock image loading removed
+      let dragStartOffsetX = 0;
+      let dragStartOffsetY = 0;
+      let zoomLevel = 1;
+      let pinchStartDistance = null;
+      let pinchStartZoom = 1;
+      let touchStartAxis = null;
+
+      previewCanvas.addEventListener('mousedown', handleMouseDown);
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      previewCanvas.addEventListener('wheel', handleWheel, { passive: false });
+      previewCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd);
+      window.addEventListener('touchcancel', handleTouchEnd);
+
+      loadWatermarkImages();
+      loadRupeeIcon();
+      loadCoverImage();
+      loadFromStorage();
+
+      imageUpload.on('change', function (e) {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+
+        files.forEach((file) => {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const src = event.target.result;
+            const id = Date.now() + Math.random();
+            const item = {
+              id: id,
+              file: file,
+              src: src,
+              image: null,
+              name: '',
+              price: '',
+              cropType: 'original',
+              zoomLevel: 1,
+              offsetX: 0,
+              offsetY: 0,
+              savedDataUrl: null,
+              savedWidth: null,
+              savedHeight: null
+            };
+
+            const img = new Image();
+            img.onload = function () {
+              item.image = img;
+              uploadedImages.push(item);
+              renderImageList();
+              if (!selectedImageId) {
+                selectImageById(item.id);
+              }
+              saveToStorage();
+            };
+            img.src = src;
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      // PDF/stock/saved UI removed
+
+      cropType.on('change', function () {
+        resetOffset();
+        updateCurrentState();
+        renderPreview();
+      });
+      watermarkTypeInputs.on('change', function () {
+        updateCurrentState();
+        renderPreview();
+      });
+      watermarkOpacity.on('input', renderPreview);
+      nameInput.on('input', function () {
+        updateCurrentState();
+        renderPreview();
+      });
+      priceInput.on('input', function () {
+        updateCurrentState();
+        renderPreview();
+      });
+      saveBtn.on('click', function () {
+        saveCurrentImage();
+      });
+      zoomInBtn.on('click', function () {
+        zoomLevel = clamp(Number((zoomLevel + 0.1).toFixed(1)), 0.8, 2.5);
+        zoomRange.val(zoomLevel.toFixed(1));
+        updateCurrentState();
+        renderPreview();
+      });
+      zoomOutBtn.on('click', function () {
+        zoomLevel = clamp(Number((zoomLevel - 0.1).toFixed(1)), 0.8, 2.5);
+        zoomRange.val(zoomLevel.toFixed(1));
+        updateCurrentState();
+        renderPreview();
+      });
+      zoomRange.on('input', function () {
+        zoomLevel = parseFloat(zoomRange.val()) || 1;
+        updateCurrentState();
+        renderPreview();
+      });
+
+      function renderPreview() {
+        if (!currentImage) return;
+
+        const selectedItem = getSelectedImage();
+        if (selectedItem) {
+          selectedItem.zoomLevel = zoomLevel;
+          selectedItem.offsetX = offsetX;
+          selectedItem.offsetY = offsetY;
+          selectedItem.cropType = cropType.val();
+          selectedItem.name = nameInput.val().trim();
+          selectedItem.price = priceInput.val().trim();
+        }
+
+        const canvasWidth = 900;
+        const canvasHeight = 900;
+        const ratio = getTargetRatio(cropType.val());
+        const frame = getFrameBounds(canvasWidth, canvasHeight, ratio);
+        const baseScale = Math.max(frame.width / currentImage.naturalWidth, frame.height / currentImage.naturalHeight);
+        const scale = baseScale * zoomLevel;
+        const drawWidth = currentImage.naturalWidth * scale;
+        const drawHeight = currentImage.naturalHeight * scale;
+        const availableX = frame.width - drawWidth;
+        const availableY = frame.height - drawHeight;
+
+        previewCanvas.width = canvasWidth;
+        previewCanvas.height = canvasHeight;
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        offsetX = clamp(offsetX, availableX, 0);
+        offsetY = clamp(offsetY, availableY, 0);
+
+        if (selectedItem) {
+          selectedItem.offsetX = offsetX;
+          selectedItem.offsetY = offsetY;
+        }
+
+        ctx.drawImage(currentImage, frame.x + offsetX, frame.y + offsetY, drawWidth, drawHeight);
+
+        ctx.save();
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 6]);
+        ctx.strokeRect(frame.x, frame.y, frame.width, frame.height);
+        ctx.restore();
+
+        drawWatermark(ctx, frame);
+        drawTextOverlay(ctx, canvasWidth, canvasHeight);
+      }
+
+      function getTargetRatio(mode) {
+        if (mode === 'portrait') return 3 / 4;
+        if (mode === 'landscape') return 4 / 3;
+        return currentImage ? currentImage.naturalWidth / currentImage.naturalHeight : 1;
+      }
+
+      function getFrameBounds(width, height, ratio) {
+        let frameWidth = width * 0.82;
+        let frameHeight = frameWidth / ratio;
+
+        if (frameHeight > height * 0.82) {
+          frameHeight = height * 0.82;
+          frameWidth = frameHeight * ratio;
+        }
+
+        return {
+          x: (width - frameWidth) / 2,
+          y: (height - frameHeight) / 2,
+          width: frameWidth,
+          height: frameHeight
+        };
+      }
+
+      function resetOffset() {
+        if (!currentImage) return;
+        const ratio = getTargetRatio(cropType.val());
+        const frame = getFrameBounds(900, 900, ratio);
+        const baseScale = Math.max(frame.width / currentImage.naturalWidth, frame.height / currentImage.naturalHeight);
+        const scale = baseScale * zoomLevel;
+        const drawWidth = currentImage.naturalWidth * scale;
+        const drawHeight = currentImage.naturalHeight * scale;
+
+        offsetX = (frame.width - drawWidth) / 2;
+        offsetY = (frame.height - drawHeight) / 2;
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function loadWatermarkImages() {
+        const logo = new Image();
+        logo.crossOrigin = 'anonymous';
+        logo.onload = function () {
+          watermarkImages.logo = logo;
+          renderPreview();
+        };
+        logo.src = 'https://raw.githubusercontent.com/hiranjose07-cloud/ImgEdit/refs/heads/main/PebbleNest-logo1.png';
+
+        const logoWhite = new Image();
+        logoWhite.crossOrigin = 'anonymous';
+        logoWhite.onload = function () {
+          watermarkImages.logoWhite = logoWhite;
+          renderPreview();
+        };
+        logoWhite.src = 'https://raw.githubusercontent.com/hiranjose07-cloud/ImgEdit/refs/heads/main/PebbleNest-logo2.png';
+      }
+
+      function loadRupeeIcon() {
+        const icon = new Image();
+        icon.crossOrigin = 'anonymous';
+        icon.onload = function () {
+          rupeeIconImage = icon;
+        };
+        icon.src = 'https://raw.githubusercontent.com/hiranjose07-cloud/ImgEdit/refs/heads/main/rupee.png';
+      }
+
+      function loadCoverImage() {
+        const cover = new Image();
+        cover.crossOrigin = 'anonymous';
+        cover.onload = function () {
+          coverImage = cover;
+        };
+        cover.src = 'https://raw.githubusercontent.com/hiranjose07-cloud/ImgEdit/refs/heads/main/PN-cvrpic.jpg';
+      }
+
+      const IDB_DB_NAME = 'ImageEditDb';
+      const IDB_STORE_NAME = 'images';
+
+      function createImage(src) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          if (/^https?:\/\//i.test(src)) {
+            img.crossOrigin = 'anonymous';
+          }
+          img.onload = function () {
+            resolve(img);
+          };
+          img.onerror = function () {
+            reject(new Error('Failed to load image'));
+          };
+          img.src = src;
+        });
+      }
+
+      // Stock and related functions removed
+
+      function openDb() {
+        return new Promise((resolve, reject) => {
+          if (!window.indexedDB) {
+            return reject(new Error('IndexedDB not supported'));
+          }
+          const request = indexedDB.open(IDB_DB_NAME, 1);
+          request.onupgradeneeded = function (event) {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(IDB_STORE_NAME)) {
+              db.createObjectStore(IDB_STORE_NAME, { keyPath: 'id' });
+            }
+          };
+          request.onsuccess = function () {
+            resolve(request.result);
+          };
+          request.onerror = function () {
+            reject(request.error);
+          };
+        });
+      }
+
+      function saveImagesToDb(state) {
+        openDb().then((db) => {
+          const tx = db.transaction(IDB_STORE_NAME, 'readwrite');
+          const store = tx.objectStore(IDB_STORE_NAME);
+          store.put(state);
+          tx.oncomplete = function () {
+            db.close();
+          };
+          tx.onerror = function () {
+            console.warn('IndexedDB save failed', tx.error);
+            db.close();
+          };
+        }).catch((err) => {
+          console.warn('IndexedDB save skipped', err);
+        });
+      }
+
+      function loadImagesFromDb() {
+        return openDb().then((db) => {
+          return new Promise((resolve, reject) => {
+            const tx = db.transaction(IDB_STORE_NAME, 'readonly');
+            const store = tx.objectStore(IDB_STORE_NAME);
+            const request = store.get('imageEditState');
+            request.onsuccess = function () {
+              resolve(request.result || null);
+              db.close();
+            };
+            request.onerror = function () {
+              reject(request.error);
+              db.close();
+            };
+          });
+        });
+      }
+
+      function rebuildSavedDataUrl(item) {
+        return new Promise((resolve) => {
+          if (!item.image || !item.src) {
+            return resolve();
+          }
+
+          const mode = item.cropType || 'original';
+          const targetRatio = getTargetRatio(mode);
+          const exportWidth = 1200;
+          const exportHeight = Math.round(exportWidth / targetRatio);
+          const exportCanvas = document.createElement('canvas');
+          exportCanvas.width = exportWidth;
+          const imageHeight = Math.round(exportWidth / targetRatio);
+          const footerHeight = 170;
+          exportCanvas.height = imageHeight + footerHeight;
+          const exportCtx = exportCanvas.getContext('2d');
+
+          const previewFrame = getFrameBounds(900, 900, targetRatio);
+          const previewScale = Math.max(previewFrame.width / item.image.naturalWidth, previewFrame.height / item.image.naturalHeight) * (item.zoomLevel || 1);
+          const sourceX = Math.max(0, -item.offsetX / previewScale);
+          const sourceY = Math.max(0, -item.offsetY / previewScale);
+          const sourceWidth = Math.min(item.image.naturalWidth, previewFrame.width / previewScale);
+          const sourceHeight = Math.min(item.image.naturalHeight, previewFrame.height / previewScale);
+
+          exportCtx.drawImage(item.image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, exportWidth, imageHeight);
+          drawWatermark(exportCtx, {
+            x: 0,
+            y: 0,
+            width: exportWidth,
+            height: imageHeight
+          });
+          drawTextFooter(exportCtx, exportWidth, imageHeight, footerHeight, item.name, item.price);
+
+          item.savedDataUrl = exportCanvas.toDataURL('image/jpeg', 0.9);
+          item.savedWidth = exportWidth;
+          item.savedHeight = imageHeight + footerHeight;
+          item.hasFooter = true;
+          resolve();
+        });
+      }
+
+      function loadFromStorage() {
+        const loadFromLocalStorage = () => {
+          const stored = localStorage.getItem('imageEditState');
+          if (!stored) return null;
+          try {
+            const savedState = JSON.parse(stored);
+            return savedState && typeof savedState === 'object' ? savedState : null;
+          } catch (err) {
+            console.warn('Unable to parse localStorage state', err);
+            return null;
+          }
+        };
+
+        const restoreState = async (state) => {
+          if (!state) return;
+          uploadedImages = [];
+            selectedImageId = state.uploadedImages?.[0]?.id || null;
+
+          const loadPromises = (Array.isArray(state.uploadedImages) ? state.uploadedImages : []).map(async (item) => {
+            const newItem = {
+              id: item.id,
+              fileName: item.fileName || item.file?.name || 'image',
+              src: item.src,
+              image: null,
+              name: item.name || '',
+              price: item.price || '',
+              cropType: item.cropType || 'original',
+              zoomLevel: item.zoomLevel || 1,
+              offsetX: item.offsetX || 0,
+              offsetY: item.offsetY || 0
+            };
+            try {
+              newItem.image = await createImage(newItem.src);
+            } catch (err) {
+              console.warn('Could not restore image', err);
+            }
+            return newItem;
+          });
+
+          const loadedItems = await Promise.all(loadPromises);
+          uploadedImages = loadedItems.filter((item) => item.image);
+          renderImageList();
+          if (selectedImageId) {
+            const matchingItem = uploadedImages.find((item) => item.id === selectedImageId);
+            if (matchingItem) {
+              selectImageById(selectedImageId);
+            }
+          }
+        };
+
+        if (window.indexedDB) {
+          loadImagesFromDb().then((state) => {
+            if (state && typeof state === 'object') {
+              restoreState(state);
+            } else if (window.localStorage) {
+              restoreState(loadFromLocalStorage());
+            }
+          }).catch((err) => {
+            console.warn('IndexedDB load failed', err);
+            if (window.localStorage) {
+              restoreState(loadFromLocalStorage());
+            }
+          });
+        } else if (window.localStorage) {
+          restoreState(loadFromLocalStorage());
+        }
+      }
+
+      function saveToStorage() {
+        const state = {
+          id: 'imageEditState',
+          uploadedImages: uploadedImages.map((item) => ({
+            id: item.id,
+            fileName: item.fileName || item.file?.name || 'image',
+            src: item.src,
+            name: item.name || '',
+            price: item.price || '',
+            cropType: item.cropType || 'original',
+            zoomLevel: item.zoomLevel || 1,
+            offsetX: item.offsetX || 0,
+            offsetY: item.offsetY || 0
+          }))
+        };
+
+        if (window.localStorage) {
+          try {
+            localStorage.setItem('imageEditState', JSON.stringify(state));
+          } catch (err) {
+            console.warn('Unable to save localStorage state', err);
+          }
+        }
+
+        if (window.indexedDB) {
+          saveImagesToDb(state);
+        }
+      }
+
+      function drawWatermark(context, frame) {
+        const selectedType = $('input[name="watermarkType"]:checked').val() || 'logo';
+        const opacity = parseInt(watermarkOpacity.val(), 10) / 100;
+        const footerHeight = 110;
+        const footerTop = frame.height - footerHeight;
+
+        if (selectedType === 'text') {
+          context.save();
+          context.globalAlpha = opacity;
+          context.font = 'bold 28px Arial';
+          context.fillStyle = 'rgba(255,255,255,0.95)';
+          context.textAlign = 'right';
+          const textY = frame.y + frame.height - 30;
+          context.fillText('PebbleNest', frame.x + frame.width - 30, textY);
+          context.restore();
+          return;
+        }
+
+        const watermarkImg = selectedType === 'logoWhite' ? watermarkImages.logoWhite : watermarkImages.logo;
+        if (!watermarkImg) return;
+
+        const targetHeight = 130;
+        const aspectRatio = watermarkImg.width / watermarkImg.height;
+        const targetWidth = targetHeight * aspectRatio;
+        const x = frame.x + frame.width - targetWidth - 40;
+        const y = frame.y + frame.height - targetHeight - 40;
+
+        context.save();
+        context.globalAlpha = opacity;
+        context.drawImage(watermarkImg, x, y, targetWidth, targetHeight);
+        context.restore();
+      }
+
+      function drawTextOverlay(context, width, height, scale = 1, nameText = null, priceValue = null) {
+        const resolvedName = (nameText !== null ? nameText : nameInput.val().trim()) || 'Name';
+        const resolvedPrice = (priceValue !== null ? priceValue : priceInput.val().trim()) || 'Price';
+        const priceText = `₹ ${resolvedPrice}`;
+        const footerHeight = 110 * scale;
+        const padding = 28 * scale;
+        const textY = height - footerHeight + padding;
+
+        context.save();
+        context.fillStyle = 'rgba(0, 0, 0, 0.45)';
+        context.fillRect(0, height - footerHeight, width, footerHeight);
+
+        context.fillStyle = '#fff';
+        context.font = `bold ${Math.round(42 * scale)}px Arial`;
+        context.textAlign = 'left';
+        context.fillText(resolvedName, 30 * scale, textY);
+
+        context.font = `${Math.round(34 * scale)}px Arial`;
+        context.fillText(priceText, 30 * scale, textY + Math.round(44 * scale));
+        context.restore();
+      }
+
+      function adjustFontToFit(context, text, maxWidth, baseSize, minSize = 26, weight = 'bold', family = 'Arial') {
+        let size = baseSize;
+        while (size >= minSize) {
+          context.font = `${weight} ${size}px ${family}`;
+          if (context.measureText(text).width <= maxWidth) {
+            break;
+          }
+          size -= 2;
+        }
+        return size;
+      }
+
+      function drawTextFooter(context, width, imageHeight, footerHeight, nameText, priceValue) {
+        const resolvedName = nameText || 'Name';
+        const resolvedPrice = priceValue || 'Price';
+        const priceText = `₹ ${resolvedPrice}`;
+        const padding = 30;
+        const baseTitleFontSize = 65;
+        const priceFontSize = 60;
+        const suffixFontSize = 50;
+        const separatorGap = 0;
+        const priceGap = 10;
+        const maxTitleWidth = width - padding * 2;
+
+        const titleFontSize = adjustFontToFit(context, resolvedName, maxTitleWidth, baseTitleFontSize, 26, 'bold', 'Arial');
+        const totalTextHeight = titleFontSize + separatorGap + priceFontSize;
+        const top = imageHeight + Math.round((footerHeight - totalTextHeight) / 2);
+
+        context.save();
+        context.fillStyle = '#fff';
+        context.fillRect(0, imageHeight, width, footerHeight);
+
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+
+        // Draw centered title
+        context.fillStyle = '#111';
+        context.font = `bold ${titleFontSize}px Arial`;
+        const titleCenter = top + titleFontSize / 2;
+        context.fillText(resolvedName, width / 2, titleCenter);
+
+        // Draw separator line below the title
+        const sepY = top + titleFontSize + Math.round(separatorGap / 2);
+        context.strokeStyle = '#d1d5db';
+        context.lineWidth = 1;
+        context.beginPath();
+        context.moveTo(padding, sepY);
+        context.lineTo(width - padding, sepY);
+        context.stroke();
+
+        // Draw price and suffix centered as one group below separator
+        const priceCenter = top + titleFontSize + separatorGap + priceGap + priceFontSize / 2;
+        context.font = `${priceFontSize}px Arial`;
+        const priceMetrics = context.measureText(priceText);
+
+        const suffix = ' / Piece';
+        context.font = `${suffixFontSize}px Arial`;
+        const suffixMetrics = context.measureText(suffix);
+
+        const gapBetween = 12;
+        const groupWidth = priceMetrics.width + suffixMetrics.width + gapBetween;
+        const groupStartX = width / 2 - groupWidth / 2;
+
+        context.font = `${priceFontSize}px Arial`;
+        context.textAlign = 'left';
+        context.fillStyle = '#111';
+        context.fillText(priceText, groupStartX, priceCenter);
+
+        context.font = `${suffixFontSize}px Arial`;
+        context.fillStyle = 'rgba(17,24,39,0.7)';
+        context.fillText(suffix, groupStartX + priceMetrics.width + gapBetween, priceCenter);
+
+        context.restore();
+      }
+
+      function handleMouseDown(event) {
+        if (!currentImage) return;
+        isDragging = true;
+        dragStartX = event.clientX;
+        dragStartY = event.clientY;
+        dragStartOffsetX = offsetX;
+        dragStartOffsetY = offsetY;
+        previewCanvas.style.cursor = 'grabbing';
+      }
+
+      function handleMouseMove(event) {
+        if (!isDragging || !currentImage) return;
+        offsetX = dragStartOffsetX + (event.clientX - dragStartX);
+        offsetY = dragStartOffsetY + (event.clientY - dragStartY);
+        renderPreview();
+      }
+
+      function handleMouseUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        previewCanvas.style.cursor = 'grab';
+      }
+
+      function handleWheel(event) {
+        if (!currentImage) return;
+        event.preventDefault();
+        const direction = event.deltaY < 0 ? 0.1 : -0.1;
+        zoomLevel = clamp(Number((zoomLevel + direction).toFixed(1)), 0.8, 2.5);
+        zoomRange.val(zoomLevel.toFixed(1));
+        renderPreview();
+      }
+
+      function handleTouchStart(event) {
+        if (!currentImage || event.touches.length === 0) return;
+
+        if (event.touches.length === 2) {
+          event.preventDefault();
+          pinchStartDistance = getTouchDistance(event.touches);
+          pinchStartZoom = zoomLevel;
+          touchStartAxis = 'pinch';
+          return;
+        }
+
+        const touch = event.touches[0];
+        touchStartAxis = null;
+        dragStartX = touch.clientX;
+        dragStartY = touch.clientY;
+        dragStartOffsetX = offsetX;
+        dragStartOffsetY = offsetY;
+      }
+
+      function handleTouchMove(event) {
+        if (!currentImage || event.touches.length === 0) return;
+
+        if (event.touches.length === 2 && pinchStartDistance) {
+          event.preventDefault();
+          const distance = getTouchDistance(event.touches);
+          const ratio = distance / pinchStartDistance;
+          zoomLevel = clamp(Number((pinchStartZoom * ratio).toFixed(1)), 0.8, 2.5);
+          zoomRange.val(zoomLevel.toFixed(1));
+          renderPreview();
+          return;
+        }
+
+        const touch = event.touches[0];
+        const deltaX = touch.clientX - dragStartX;
+        const deltaY = touch.clientY - dragStartY;
+
+        if (!touchStartAxis) {
+          if (Math.abs(deltaX) < 6 && Math.abs(deltaY) < 6) {
+            return;
+          }
+          touchStartAxis = Math.abs(deltaY) > Math.abs(deltaX) ? 'vertical' : 'horizontal';
+        }
+
+        if (touchStartAxis === 'vertical') {
+          return;
+        }
+
+        event.preventDefault();
+        isDragging = true;
+        offsetX = dragStartOffsetX + deltaX;
+        offsetY = dragStartOffsetY + deltaY;
+        renderPreview();
+      }
+
+      function handleTouchEnd(event) {
+        if (event.touches.length >= 2) return;
+        if (!isDragging) return;
+        isDragging = false;
+        pinchStartDistance = null;
+        pinchStartZoom = zoomLevel;
+        previewCanvas.style.cursor = 'grab';
+      }
+
+      function getTouchDistance(touches) {
+        const [first, second] = touches;
+        const dx = second.clientX - first.clientX;
+        const dy = second.clientY - first.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+
+      // PDF download removed
+
+      function getSelectedImage() {
+        return uploadedImages.find((item) => item.id === selectedImageId);
+      }
+
+      function updateCurrentState() {
+        const selectedItem = getSelectedImage();
+        if (!selectedItem) return;
+        selectedItem.name = nameInput.val().trim();
+        selectedItem.price = priceInput.val().trim();
+        selectedItem.cropType = cropType.val();
+        selectedItem.zoomLevel = zoomLevel;
+        selectedItem.offsetX = offsetX;
+        selectedItem.offsetY = offsetY;
+        renderImageList();
+        saveToStorage();
+      }
+
+      function selectImageById(id) {
+        const item = uploadedImages.find((image) => image.id === id);
+        if (!item) return;
+        selectedImageId = id;
+        currentImage = item.image;
+        zoomLevel = item.zoomLevel || 1;
+        zoomRange.val(zoomLevel.toFixed(1));
+        cropType.val(item.cropType || 'original');
+        nameInput.val(item.name || '');
+        priceInput.val(item.price || '');
+        if (typeof item.offsetX === 'number' && typeof item.offsetY === 'number') {
+          offsetX = item.offsetX;
+          offsetY = item.offsetY;
+        } else {
+          resetOffset();
+        }
+        renderPreview();
+        renderImageList();
+      }
+
+      function renderImageList() {
+        imageList.empty();
+        uploadedImages.forEach((item) => {
+          const fileName = item.file?.name || item.fileName || 'Image';
+          const card = $('<div>').addClass('image-card').toggleClass('selected', item.id === selectedImageId);
+          const thumb = $('<img>').attr('src', item.src).attr('alt', fileName);
+          const body = $('<div>').addClass('card-body');
+          const title = $('<p>').addClass('image-title').text(fileName);
+          const subtitle = $('<p>').addClass('image-subtitle').text(item.name || 'Tap to edit');
+          const removeBtn = $('<button>').addClass('close-btn').attr('type', 'button').html('&times;');
+
+          removeBtn.on('click', function (event) {
+            event.stopPropagation();
+            removeUploadedImage(item.id);
+          });
+
+          card.append(removeBtn, thumb, body.append(title, subtitle));
+          card.on('click', function () {
+            selectImageById(item.id);
+          });
+          imageList.append(card);
+        });
+      }
+
+      let draggedSavedId = null;
+
+      // Saved gallery removed — downloads now happen immediately on save
+
+      function saveCurrentImage() {
+        if (!currentImage) {
+          alert('Please upload and select an image first.');
+          return;
+        }
+
+        updateCurrentState();
+
+        const selectedItem = getSelectedImage();
+        if (!selectedItem) return;
+
+        const mode = cropType.val();
+        const targetRatio = getTargetRatio(mode);
+        const exportWidth = 1200;
+        const imageHeight = Math.round(exportWidth / targetRatio);
+        const footerHeight = 170;
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = exportWidth;
+        exportCanvas.height = imageHeight + footerHeight;
+        const exportCtx = exportCanvas.getContext('2d');
+
+        const previewFrame = getFrameBounds(900, 900, targetRatio);
+        const previewScale = Math.max(previewFrame.width / currentImage.naturalWidth, previewFrame.height / currentImage.naturalHeight) * zoomLevel;
+        const sourceX = Math.max(0, -offsetX / previewScale);
+        const sourceY = Math.max(0, -offsetY / previewScale);
+        const sourceWidth = Math.min(currentImage.naturalWidth, previewFrame.width / previewScale);
+        const sourceHeight = Math.min(currentImage.naturalHeight, previewFrame.height / previewScale);
+
+        exportCtx.drawImage(
+          currentImage,
+          sourceX,
+          sourceY,
+          sourceWidth,
+          sourceHeight,
+          0,
+          0,
+          exportWidth,
+          imageHeight
+        );
+
+        drawWatermark(exportCtx, {
+          x: 0,
+          y: 0,
+          width: exportWidth,
+          height: imageHeight
+        });
+
+        drawTextFooter(exportCtx, exportWidth, imageHeight, footerHeight, selectedItem.name, selectedItem.price);
+
+        const savedDataUrl = exportCanvas.toDataURL('image/jpeg', 0.9);
+
+        // Persist a simple counter for item filenames so downloads are item1, item2, ...
+        const nextIndexKey = 'nextItemIndex';
+        let nextIndex = parseInt(localStorage.getItem(nextIndexKey) || '1', 10);
+        if (isNaN(nextIndex) || nextIndex < 1) nextIndex = 1;
+        const fileName = `item${nextIndex}`;
+        localStorage.setItem(nextIndexKey, String(nextIndex + 1));
+
+        // Trigger immediate download of the saved JPEG; do not keep saved copies in the UI
+        const link = document.createElement('a');
+        link.href = savedDataUrl;
+        link.download = `${fileName}.jpg`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Update image list state and persist uploadedImages only
+        renderImageList();
+        saveToStorage();
+      }
+
+      // Saved-image download helper removed (saves now download immediately)
+
+      function removeUploadedImage(id) {
+        uploadedImages = uploadedImages.filter((item) => item.id !== id);
+        if (selectedImageId === id) {
+          selectedImageId = uploadedImages.length ? uploadedImages[0].id : null;
+          if (selectedImageId) {
+            selectImageById(selectedImageId);
+          } else {
+            currentImage = null;
+            ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+          }
+        }
+        renderImageList();
+        renderSavedGallery();
+        saveToStorage();
+      }
+
+      // PDF generation and saved-item management removed
+    });
+  </script>
+</body>
+</html>
