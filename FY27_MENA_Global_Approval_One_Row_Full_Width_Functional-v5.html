@@ -1,0 +1,1510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FY27 MENA Strategic Funding Application</title>
+<style>
+:root{
+  --yellow:#ffe600;
+  --ink:#2e2e38;
+  --ink-2:#4a4a55;
+  --muted:#6b6b76;
+  --line:#e3e3e7;
+  --line-strong:#c8c8d0;
+  --bg:#f7f7f8;
+  --white:#ffffff;
+  --danger:#c62828;
+  --soft:#f6f6f7;
+  --locked:#f4f4f6;
+  --radius:8px;
+  --ring:0 0 0 3px rgba(255,230,0,.55);
+  --shadow:0 1px 2px rgba(31,31,40,.05),0 10px 28px rgba(31,31,40,.05);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.5;
+  font-family:Arial,Helvetica,sans-serif;
+  -webkit-font-smoothing:antialiased;font-size:14.5px}
+.skip{position:absolute;left:-9999px}
+.skip:focus{left:12px;top:12px;z-index:99;background:#fff;padding:12px;border:2px solid var(--ink);border-radius:6px}
+
+/* ---------- HEADER ---------- */
+header{background:var(--white);border-bottom:1px solid var(--line)}
+.head{max-width:1200px;margin:auto;padding:22px 30px;display:flex;gap:28px;
+  align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.wordmark{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:800;
+  letter-spacing:2.4px;text-transform:uppercase;color:var(--muted)}
+.wordmark i{width:12px;height:12px;background:var(--yellow);border-radius:2px;display:block}
+h1{font-size:27px;line-height:1.18;margin:8px 0 6px;font-weight:700;letter-spacing:-.3px}
+.subtitle{margin:0;color:var(--muted);font-size:13.5px;max-width:640px}
+.datebox{min-width:236px;background:var(--white);border:1px solid var(--line);
+  border-left:4px solid var(--yellow);border-radius:6px;padding:13px 16px}
+.side .datebox{min-width:0;width:100%;margin-bottom:16px}
+.datebox small{display:block;font-size:10.5px;font-weight:800;letter-spacing:1.6px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.datebox strong{font-size:14.5px;font-weight:700;color:var(--ink)}
+
+/* ---------- LAYOUT ---------- */
+.layout{max-width:1200px;margin:26px auto 80px;padding:0 30px;display:grid;
+  grid-template-columns:minmax(0,1fr);gap:0;align-items:start}
+.side{position:sticky;top:20px;background:var(--white);border:1px solid var(--line);
+  border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.side .sidetitle{font-size:10.5px;font-weight:800;letter-spacing:1.6px;
+  text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+.side a{display:flex;gap:10px;align-items:center;color:var(--ink-2);text-decoration:none;
+  padding:10px 12px;border-radius:6px;border-left:3px solid transparent;
+  font-size:13.5px;font-weight:600;margin-bottom:2px;transition:background .15s,color .15s}
+.side a span.n{font-size:11px;font-weight:800;color:var(--muted);min-width:16px}
+.side a:hover{background:var(--soft);color:var(--ink)}
+.side a.active{background:#fffbdc;border-left-color:var(--yellow);color:var(--ink)}
+.side a.active span.n{color:var(--ink)}
+.progress{height:6px;background:#ededf0;border-radius:3px;margin-top:16px;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--yellow);transition:width .25s}
+.sidenote{font-size:12px;color:var(--muted);margin:9px 0 0}
+.funding-total{margin-top:18px;padding-top:15px;border-top:1px solid var(--line)}
+.funding-total-label{display:block;font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+.funding-total-value{display:flex;align-items:baseline;gap:6px;margin-top:5px;font-size:20px;font-weight:800;color:var(--ink)}
+.funding-total-value small{font-size:11px;font-weight:800;color:var(--muted)}
+
+/* ---------- CARDS ---------- */
+main{min-width:0}
+.notice{background:#fffbdc;border:1px solid #f0e59a;border-left:4px solid var(--yellow);
+  border-radius:6px;padding:13px 16px;margin-bottom:20px;font-size:13.5px;color:var(--ink)}
+.section{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+  margin-bottom:20px;box-shadow:var(--shadow);overflow:hidden}
+.section h2{margin:0;padding:16px 22px;font-size:14px;letter-spacing:auto;
+  color:var(--ink);display:flex;align-items:center;gap:12px;
+  background:var(--white);border-bottom:1px solid var(--line)}
+.section h2 i{width:26px;height:26px;border-radius:6px;background:var(--ink);color:var(--yellow);
+  font-style:normal;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.sectionbody{padding:22px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px}
+.full{grid-column:1/-1}
+.field label,.legend{display:block;font-weight:600;font-size:13px;color:var(--ink);margin-bottom:7px}
+.field-label{display:flex;align-items:center;gap:7px;margin-bottom:2px}
+.field .field-label label{margin:0}
+.description-icon{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 17px;
+  width:17px;height:17px;padding:0;border:1px solid var(--line-strong);border-radius:50%;background:var(--white);
+  color:var(--muted);font:700 11px Arial,Helvetica,sans-serif;cursor:help}
+.description-icon:hover,.description-icon:focus-visible{border-color:var(--ink);color:var(--ink);outline:none;box-shadow:var(--ring)}
+.description-icon::after{content:attr(data-tooltip);position:absolute;left:0;right:auto;top:calc(100% + 8px);z-index:20;
+  width:min(320px,calc(100vw - 48px));padding:10px 12px;border-radius:5px;background:var(--ink);color:var(--white);
+  font:400 12px/1.5 Arial,Helvetica,sans-serif;text-align:left;white-space:normal;box-shadow:var(--shadow);
+  opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s}
+.description-icon:hover::after,.description-icon:focus-visible::after{opacity:1;visibility:visible}
+.req{color:var(--danger);font-weight:800}
+.opt{color:var(--muted);font-weight:600;font-size:12px}
+.hint{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.control,input,select,textarea{width:100%;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:var(--ink);
+  background:var(--white);border:1px solid var(--line-strong);border-radius:6px;padding:10px 12px;
+  transition:border-color .15s,box-shadow .15s}
+textarea{min-height:56px;resize:vertical;line-height:1.4}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ink);box-shadow:var(--ring)}
+input[readonly]{background:var(--soft);color:var(--ink-2);font-weight:700}
+.multi-select{position:relative}
+.multi-select-trigger{width:100%;min-height:36px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:8px 10px;border:1px solid var(--line-strong);border-radius:6px;background:var(--white);color:var(--ink);
+  font:14px Arial,Helvetica,sans-serif;text-align:left;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.multi-select-trigger:hover,.multi-select.open .multi-select-trigger{border-color:var(--ink)}
+.multi-select-trigger:focus-visible{outline:none;box-shadow:var(--ring)}
+.multi-select-value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.multi-select-value.placeholder{color:var(--muted)}
+.multi-select-chevron{flex:0 0 auto;font-size:11px;transition:transform .15s}
+.multi-select.open .multi-select-chevron{transform:rotate(180deg)}
+.multi-select-panel{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:5;padding:5px;
+  background:var(--white);border:1px solid var(--line-strong);border-radius:6px;box-shadow:var(--shadow)}
+.multi-select-option{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:4px;cursor:pointer;font-size:13.5px}
+.multi-select-option:hover{background:var(--soft)}
+.multi-select-option input{width:16px;height:16px;margin:0;accent-color:var(--ink);cursor:pointer;     float: left;
+    margin-right: 10px;}
+.multi-select-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 10px 5px;
+  border-top:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+.multi-select-clear{border:0;padding:2px;background:transparent;color:var(--ink-2);font:inherit;font-weight:700;cursor:pointer}
+.multi-select-clear:disabled{color:#9d9da8;cursor:not-allowed}
+input:disabled,select:disabled,textarea:disabled,
+fieldset:disabled input,fieldset:disabled select,fieldset:disabled textarea{
+  background:var(--locked);color:#9d9da8;border-color:#e6e6ea;cursor:not-allowed;box-shadow:none}
+.charcount{font-size:11.5px;color:var(--muted);margin-top:5px;text-align:right}
+.radio{display:flex;gap:22px;align-items:center;min-height:42px;flex-wrap:wrap}
+.radio label{display:inline-flex;gap:8px;align-items:center;font-weight:600;font-size:13.5px;
+  margin:0;cursor:pointer;padding:7px 15px;border:1px solid var(--line-strong);border-radius:999px;
+  transition:background .15s,border-color .15s}
+.radio input{width:16px;height:16px;accent-color:var(--ink);cursor:pointer;     margin-top: -1px;
+    margin-right: -2px;}
+.radio label:has(input:checked){background:#fffbdc;border-color:var(--ink)}
+fieldset{border:0;padding:0;margin:0}
+.upload{border:1px dashed var(--line-strong);padding:12px;background:#fbfbfc;border-radius:6px}
+.upload input[type=file]{border:0;background:transparent;padding:0;font-size:13px}
+fieldset:disabled .upload{border-color:#e6e6ea;background:var(--locked)}
+
+/* ---------- QUARTER GRID ---------- */
+.qgrid{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.qgrid th{background:#f2f2f4;color:var(--ink);font-size:11px;font-weight:800;letter-spacing:1px;
+  text-transform:uppercase;padding:10px 8px;text-align:center;border-bottom:2px solid var(--yellow)}
+.qgrid th.lh{text-align:left;padding-left:14px}
+.qgrid td{padding:8px;border-top:1px solid var(--line)}
+.qgrid tr:first-child td{border-top:0}
+.qgrid .rown{font-weight:600;font-size:13px;color:var(--ink)}
+.qgrid input{text-align:right;padding:8px 10px}
+.rowtotal{text-align:right;font-weight:800;font-size:13.5px;color:var(--ink);padding-right:14px !important;white-space:nowrap}
+
+/* ---------- SUMMARY ---------- */
+.summary{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.sumrow{display:flex;justify-content:space-between;gap:16px;padding:12px 18px;
+  border-bottom:1px solid var(--line);font-size:13.5px;color:var(--ink-2)}
+.sumrow span:last-child{font-weight:700;color:var(--ink);white-space:nowrap}
+.sumrow em{font-style:normal;font-size:11.5px;font-weight:800;color:var(--muted);margin-right:4px}
+.sumrow.total{background:#fffbdc;border-bottom:0;align-items:baseline;padding:15px 18px}
+.sumrow.total span:first-child{font-weight:800;letter-spacing:.6px;text-transform:uppercase;font-size:12px;color:var(--ink)}
+.sumrow.total strong{font-size:24px;font-weight:800;letter-spacing:-.4px}
+
+
+/* ---------- APPROVALS ---------- */
+.approvals{display:grid;gap:12px}
+.approval{border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;
+  justify-content:space-between;gap:18px;align-items:center;background:var(--white)}
+.approval strong{font-size:13.5px;display:block;margin-bottom:4px}
+.approval select,.approval input{max-width:320px}
+.status{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+  padding:5px 10px;border-radius:999px;background:#fdf3d0;color:#7a5a00;white-space:nowrap}
+.status.done{background:#e9f5ec;color:#177245}
+
+/* ---------- ACTIONS / MODAL ---------- */
+.actions{display:flex;justify-content:flex-end;gap:12px;padding:4px 0 0}
+.btn{font-family:Arial,Helvetica,sans-serif;font-size:13.5px;font-weight:700;letter-spacing:.3px;border-radius:6px;
+  padding:12px 24px;border:1.5px solid var(--line-strong);background:var(--white);color:var(--ink);cursor:pointer;
+  transition:background .15s,border-color .15s,color .15s}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--yellow);border-color:var(--yellow);color:var(--ink);font-weight:800}
+.btn.primary:hover{background:#f2da00;border-color:#f2da00}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.overlay{display:none;position:fixed;inset:0;background:rgba(26,26,36,.66);z-index:99;
+  align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{position:relative;background:var(--white);border-radius:12px;border-top:6px solid var(--yellow);
+  max-width:540px;width:100%;padding:28px 30px 24px;box-shadow:0 24px 64px rgba(0,0,0,.35)}
+.modal .ic{width:48px;height:48px;border-radius:50%;background:#fffbdc;border:2px solid var(--yellow);
+  color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;margin-bottom:14px}
+.modal h3{margin:0 0 10px;font-size:19px;color:var(--ink)}
+.modal p{margin:0 0 10px;font-size:13.5px;color:var(--ink-2)}
+.modal ul{margin:8px 0 4px;padding-left:20px;font-size:13px;color:var(--ink-2);line-height:1.7}
+.modal .mfoot{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.modal .mbtn{background:var(--ink);border-color:var(--ink);color:#fff}
+.modal .mbtn:hover{background:#1a1a24;border-color:#1a1a24}
+.modal .mbtn2{background:var(--yellow);border-color:var(--yellow);color:var(--ink);font-weight:800}
+.modal .mclose{position:absolute;top:14px;right:14px;width:34px;height:34px;border:0;border-radius:50%;
+  background:var(--soft);color:var(--ink-2);font-size:19px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
+.modal .mclose:hover{background:#e9e9ee;color:var(--ink)}
+.modal.success{border-top-color:#177245}
+.modal.success .ic{background:#e9f5ec;border-color:#9fd6b4;color:#177245}
+.modal.error{border-top-color:var(--danger)}
+.modal.error .ic{background:#fdecea;border-color:#eab4ae;color:var(--danger)}
+.overlay.open{animation:ovFade .2s ease-out}
+.modal{animation:ovPop .26s cubic-bezier(.16,1,.3,1)}
+@keyframes ovFade{from{opacity:0}to{opacity:1}}
+@keyframes ovPop{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr;padding:0 20px}
+  .side{position:static}
+  .head{padding:20px}
+  h1{font-size:22px}
+}
+@media(max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .full{grid-column:auto}
+  .layout{padding:0 14px}
+  .qgrid th:not(.lh){font-size:10px;padding:8px 4px}
+  .qgrid input{padding:8px 6px}
+  .approval{flex-direction:column;align-items:flex-start}
+  .actions{flex-direction:column}
+  .btn{width:100%}
+}
+
+/* Compact form spacing to reduce page length. */
+.head{padding-top:16px;padding-bottom:16px}
+.layout{margin-top:18px;margin-bottom:48px;gap:20px}
+.side{padding:14px}
+.side a{padding:7px 10px}
+.progress{margin-top:12px}
+.funding-total{margin-top:14px;padding-top:12px}
+.notice{padding:10px 13px;margin-bottom:14px}
+.section{margin-bottom:14px; overflow:visible !important;}
+.section h2{padding:12px 18px}
+.sectionbody{padding:16px}
+.grid{row-gap:14px;column-gap:18px}
+.field label,.legend{margin-bottom:5px}
+.control,input,select,textarea{padding:8px 10px}
+textarea{min-height:56px}
+.radio{gap:14px;min-height:36px}
+.radio label{padding:5px 12px}
+.qgrid th{padding:7px 6px}
+.qgrid td{padding:5px}
+.upload{padding:9px}
+
+@media(max-width:900px){
+  .head{padding:16px 20px}
+}
+@media(max-width:640px){
+  .layout{margin-top:14px;margin-bottom:32px;gap:14px}
+  .sectionbody{padding:14px}
+  .grid{row-gap:12px}
+}
+
+/* Section 2: force Currency | Total amount required | Purpose of funding on the same row */
+.layout{max-width:1480px;margin:10px auto 24px;padding:0 22px}.sectionbody{padding:9px 11px}.grid{row-gap:5px;column-gap:10px}.section{margin-bottom:9px}.section h2{padding:8px 14px}.field label,.legend{margin-bottom:2px}.control,input,select,textarea{padding:6px 8px;font-size:13px}textarea{min-height:52px}.hint{margin:2px 0 0;font-size:11px}.charcount{margin-top:1px}
+@media(min-width:1000px){
+ #funding>.sectionbody>.grid{grid-template-columns:minmax(120px,.48fr) minmax(190px,.76fr) minmax(420px,2.35fr);gap:5px 10px;align-items:start}
+ #funding>.sectionbody>.grid>.field:nth-child(1){grid-column:1;grid-row:1}
+ #funding>.sectionbody>.grid>.field:nth-child(2){grid-column:2;grid-row:1}
+ #funding>.sectionbody>.grid>.field:nth-child(3){grid-column:3;grid-row:1}
+ #funding #purpose{min-height:52px}
+ #funding>.sectionbody>.grid>fieldset{grid-column:1/-1}
+ #globalRows,#funding>.sectionbody>.grid>.field.full:not(:nth-child(3)){grid-column:1/-1}
+ #case>.sectionbody>.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px 10px}
+ #case>.sectionbody>.grid>.field.full{grid-column:auto} #case textarea{min-height:56px}
+ #leadershipApprovalDetails{grid-column:2/-1;grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+
+
+/* Put Approved by Global leader immediately right of co-funded question */
+@media(min-width:1000px){
+  #funding > .sectionbody > .grid > fieldset.field.full{
+    grid-column:1;
+    grid-row:2;
+  }
+  #globalRows{
+    grid-column:2/-1 !important;
+    grid-row:2;
+  }
+  #globalRows > .grid{
+    grid-template-columns:minmax(230px,.8fr) minmax(0,2.2fr);
+    gap:5px 10px;
+    align-items:start;
+  }
+  #globalRows > .grid > fieldset.field.full{
+    grid-column:1;
+    grid-row:1;
+  }
+  #globalApprovalDetails{
+    grid-column:2;
+    grid-row:1;
+    grid-template-columns:minmax(180px,1fr) minmax(240px,1.2fr);
+    gap:5px 10px;
+  }
+  #globalQuarterly{
+    grid-column:1/-1;
+  }
+}
+
+
+/* Extra separation between co-funded and Global approval controls */
+@media(min-width:1000px){
+  #funding > .sectionbody > .grid{
+    grid-template-columns:minmax(285px,1fr) minmax(0,2.45fr);
+  }
+  #funding > .sectionbody > .grid > fieldset.field.full{
+    grid-column:1;
+    padding-right:28px;
+  }
+  #globalRows{
+    grid-column:2 !important;
+    margin-left:34px;
+  }
+  #globalRows > .grid{
+    grid-template-columns:minmax(270px,.9fr) minmax(0,2.1fr);
+  }
+  #globalRows > .grid > fieldset.field.full{
+    padding-left:8px;
+  }
+}
+
+
+/* Stable refinement: readable approval row + aligned Global funding table */
+@media(min-width:1100px){
+  /* First funding row: narrow Total, wider Purpose */
+  #funding > .sectionbody > .grid{
+    grid-template-columns:minmax(125px,.42fr) minmax(150px,.48fr) minmax(520px,3.10fr);
+    column-gap:14px;
+  }
+  #funding > .sectionbody > .grid > .field:nth-child(1){grid-column:1;grid-row:1}
+  #funding > .sectionbody > .grid > .field:nth-child(2){grid-column:2;grid-row:1;max-width:185px}
+  #funding > .sectionbody > .grid > .field:nth-child(3){grid-column:3;grid-row:1}
+  #funding #purpose{min-height:52px}
+
+  /* Row 2: reserve enough width for both labels so they never overlap */
+  #funding > .sectionbody > .grid > fieldset.field.full{
+    grid-column:1 / span 1;
+    grid-row:2;
+    min-width:330px;
+    padding-right:24px;
+  }
+  #globalRows{
+    grid-column:2 / -1 !important;
+    grid-row:2;
+    margin-left:115px;
+    min-width:0;
+  }
+  #globalRows > .grid{
+    grid-template-columns:minmax(300px,.9fr) minmax(620px,2.1fr);
+    column-gap:28px;
+    row-gap:6px;
+    align-items:start;
+  }
+  #globalRows > .grid > fieldset.field.full{
+    grid-column:1;
+    grid-row:1;
+    min-width:300px;
+    padding-left:0;
+  }
+  #globalApprovalDetails{
+    grid-column:2;
+    grid-row:1;
+    grid-template-columns:minmax(280px,1fr) minmax(330px,1.2fr);
+    gap:6px 16px;
+    min-width:0;
+  }
+
+  /* Do not use negative positioning. Align table safely with Global approval block. */
+  #globalQuarterly{
+    position:static;
+    left:auto;
+    width:100%;
+    grid-column:1 / -1;
+    grid-row:2;
+    margin:8px 0 0;
+  }
+  #globalQuarterly .qgrid{width:100%;margin:0}
+}
+
+/* Fix conditional-row whitespace: when Global approval = Yes, quarter table starts at left edge */
+@media(min-width:1100px){
+  #globalRows{display:contents;}
+  #globalRows[hidden]{display:none !important;}
+  #globalRows > .grid{display:contents;}
+
+  #globalRows > .grid > fieldset.field.full{
+    grid-column:2;
+    grid-row:2;
+    margin-left:18px;
+    min-width:300px;
+  }
+  #globalApprovalDetails{
+    grid-column:3;
+    grid-row:2;
+    display:grid;
+    grid-template-columns:minmax(260px,.95fr) minmax(360px,1.25fr);
+    gap:6px 16px;
+    min-width:0;
+  }
+  #globalApprovalDetails[hidden]{display:none !important;}
+
+  /* Critical fix: quarter table occupies the complete next row, including the red-marked area. */
+  #globalQuarterly{
+    grid-column:1 / -1 !important;
+    grid-row:3;
+    position:static !important;
+    left:auto !important;
+    width:100% !important;
+    margin:6px 0 0 !important;
+  }
+  #globalQuarterly[hidden]{display:none !important;}
+  #globalQuarterly .qgrid{width:100%;margin:0;}
+
+  /* MENA table follows directly after Global table. */
+  #funding > .sectionbody > .grid > .field.full:last-child{
+    grid-column:1 / -1;
+  }
+}
+
+
+/* FINAL readable approval row: prevent labels/controls from overlapping */
+@media(min-width:1100px){
+  /* Use a clean four-column approval row with explicit minimum widths. */
+  #funding > .sectionbody > .grid{
+    grid-template-columns:360px 420px minmax(300px,1fr) minmax(360px,1.15fr) !important;
+    column-gap:28px !important;
+    align-items:start;
+  }
+
+  /* Keep top funding fields on their own first row. */
+  #funding > .sectionbody > .grid > .field:nth-child(1){grid-column:1;grid-row:1;max-width:150px}
+  #funding > .sectionbody > .grid > .field:nth-child(2){grid-column:2;grid-row:1;max-width:190px}
+  #funding > .sectionbody > .grid > .field:nth-child(3){grid-column:3 / 5;grid-row:1}
+
+  /* Approval questions/details occupy four distinct columns on row 2. */
+  #funding > .sectionbody > .grid > fieldset.field.full{
+    grid-column:1 !important;
+    grid-row:2 !important;
+    min-width:360px !important;
+    width:360px;
+    padding:0 !important;
+    margin:0 !important;
+  }
+  #globalRows{display:contents !important;}
+  #globalRows[hidden]{display:none !important;}
+  #globalRows > .grid{display:contents !important;}
+  #globalRows > .grid > fieldset.field.full{
+    grid-column:2 !important;
+    grid-row:2 !important;
+    min-width:420px !important;
+    width:420px;
+    padding:0 !important;
+    margin:0 !important;
+  }
+  #globalApprovalDetails{
+    grid-column:3 / 5 !important;
+    grid-row:2 !important;
+    display:grid !important;
+    grid-template-columns:minmax(300px,1fr) minmax(360px,1.15fr) !important;
+    column-gap:28px !important;
+    min-width:0;
+    margin:0 !important;
+  }
+  #globalApprovalDetails[hidden]{display:none !important;}
+
+  /* Ensure labels stay inside their own columns. */
+  #funding fieldset .legend,
+  #globalApprovalDetails .field label{
+    display:block;
+    white-space:nowrap;
+    overflow:visible;
+    line-height:1.25;
+  }
+  #funding .radio{flex-wrap:nowrap;gap:18px}
+
+  /* Quarterly table remains a clean full-width next row. */
+  #globalQuarterly{
+    grid-column:1 / 5 !important;
+    grid-row:3 !important;
+    position:static !important;
+    width:100% !important;
+    left:auto !important;
+    margin:8px 0 0 !important;
+  }
+  #globalQuarterly[hidden]{display:none !important;}
+  #funding > .sectionbody > .grid > .field.full:last-child{grid-column:1 / 5 !important;}
+}
+
+/* At narrower desktop widths, use two rows instead of permitting overlap. */
+@media(min-width:900px) and (max-width:1399px){
+  #funding > .sectionbody > .grid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    column-gap:24px !important;
+  }
+  #funding > .sectionbody > .grid > fieldset.field.full,
+  #globalRows > .grid > fieldset.field.full{
+    min-width:0 !important;
+    width:auto !important;
+  }
+  #globalApprovalDetails{grid-column:1 / -1 !important;grid-row:auto !important;}
+  #globalQuarterly{grid-column:1 / -1 !important;grid-row:auto !important;}
+}
+
+
+/* ONE-ROW GLOBAL APPROVAL FIX: four controls stay on one line and consume full width */
+@media(min-width:1000px){
+  #funding > .sectionbody > .grid{
+    grid-template-columns:1fr 1fr 1.35fr 1.55fr !important;
+    column-gap:18px !important;
+    width:100% !important;
+  }
+
+  #funding > .sectionbody > .grid > fieldset.field.full{
+    grid-column:1 !important;
+    grid-row:2 !important;
+    width:auto !important;
+    min-width:0 !important;
+    padding:0 !important;
+    margin:0 !important;
+  }
+
+  #globalRows{
+    display:contents !important;
+    margin:0 !important;
+  }
+  #globalRows[hidden]{display:none !important;}
+  #globalRows > .grid{display:contents !important;}
+
+  #globalRows > .grid > fieldset.field.full{
+    grid-column:2 !important;
+    grid-row:2 !important;
+    width:auto !important;
+    min-width:0 !important;
+    padding:0 !important;
+    margin:0 !important;
+  }
+
+  #globalApprovalDetails{
+    display:contents !important;
+    margin:0 !important;
+  }
+  #globalApprovalDetails[hidden]{display:none !important;}
+  #globalApprovalDetails > .field:nth-child(1){
+    grid-column:3 !important;
+    grid-row:2 !important;
+    min-width:0 !important;
+  }
+  #globalApprovalDetails > .field:nth-child(2){
+    grid-column:4 !important;
+    grid-row:2 !important;
+    min-width:0 !important;
+  }
+
+  /* Keep each label readable without overlapping its neighbor. */
+  #funding fieldset .legend,
+  #globalApprovalDetails .field label{
+    white-space:normal !important;
+    line-height:1.2 !important;
+    min-height:31px;
+  }
+  #funding .radio{flex-wrap:nowrap !important;gap:10px !important;}
+  #funding .radio label{padding:4px 12px !important;}
+
+  /* Global quarterly funding uses the complete width below, eliminating right whitespace. */
+  #globalQuarterly{
+    grid-column:1 / -1 !important;
+    grid-row:3 !important;
+    position:static !important;
+    left:auto !important;
+    width:100% !important;
+    max-width:none !important;
+    margin:6px 0 0 !important;
+  }
+  #globalQuarterly[hidden]{display:none !important;}
+  #globalQuarterly .qgrid{width:100% !important;margin:0 !important;}
+
+  #funding > .sectionbody > .grid > .field.full:last-child{
+    grid-column:1 / -1 !important;
+    width:100% !important;
+  }
+}
+
+/* Only stack when there genuinely is not enough viewport width. */
+@media(max-width:999px){
+  #globalApprovalDetails{display:grid;grid-template-columns:1fr !important;}
+}
+
+/* Four-column field layout on desktop; keep long text fields readable. */
+@media(min-width:1000px){
+  #overview>.sectionbody>.grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    align-items:start;
+  }
+  #case>.sectionbody>.grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    align-items:start;
+  }
+  #overview>.sectionbody>.grid>.field,
+  #case>.sectionbody>.grid>.field{
+    min-width:0;
+  }
+  #case>.sectionbody>.grid>.field.full{
+    grid-column:span 1 !important;
+  }
+  #case>.sectionbody>.grid>#leadershipApprovalDetails{
+    grid-column:span 3 !important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  #case>.sectionbody>.grid>.field:nth-child(-n+3)>.field-label{
+    min-height:40px;
+    line-height:1.35;
+  }
+  #case>.sectionbody>.grid>.field:nth-child(3) .description-icon::after{
+    left:auto;
+    right:0;
+  }
+  #case>.sectionbody>.grid>.field:nth-child(-n+3)>textarea{
+    height:56px;
+    min-height:56px;
+    box-sizing:border-box;
+  }
+}
+
+.multi-select-trigger{
+  min-height:0;
+  padding:6px 8px;
+  font-size:13px;
+  line-height:normal;
+}
+
+@media(min-width:1000px){
+  #funding>.sectionbody>.grid{
+    grid-template-columns:minmax(115px,.72fr) minmax(150px,.95fr) minmax(240px,1.8fr) minmax(180px,1.15fr) minmax(180px,1.15fr) !important;
+    gap:10px 16px !important;
+    align-items:start;
+  }
+  #funding>.sectionbody>.grid>.field,
+  #funding>.sectionbody>.grid>fieldset,
+  #globalRows>.grid>.field,
+  #globalRows>.grid>fieldset{
+    min-width:0;
+  }
+  #funding>.sectionbody>.grid>.field:nth-child(1){grid-column:1 !important;grid-row:1 !important;max-width:none !important;}
+  #funding>.sectionbody>.grid>.field:nth-child(2){grid-column:2 !important;grid-row:1 !important;max-width:none !important;}
+  #funding>.sectionbody>.grid>.field:nth-child(3){grid-column:3 !important;grid-row:1 !important;}
+  #funding>.sectionbody>.grid>fieldset.field.full{grid-column:4 !important;grid-row:1 !important;width:auto !important;min-width:0 !important;margin:0 !important;padding:0 !important;}
+  #globalRows{display:contents !important;margin:0 !important;}
+  #globalRows[hidden]{display:none !important;}
+  #globalRows>.grid{display:contents !important;}
+  #globalRows>.grid>fieldset.field.full{grid-column:5 !important;grid-row:1 !important;width:auto !important;min-width:0 !important;margin:0 !important;padding:0 !important;}
+  #globalApprovalDetails{display:contents !important;margin:0 !important;}
+  #globalApprovalDetails[hidden]{display:none !important;}
+  #globalApprovalDetails>.field:nth-child(1){grid-column:1 / 3 !important;grid-row:2 !important;min-width:0 !important;}
+  #globalApprovalDetails>.field:nth-child(2){grid-column:3 / 6 !important;grid-row:2 !important;min-width:0 !important;}
+  #funding>.sectionbody>.grid>.field.full:last-child{grid-column:1 / -1 !important;grid-row:auto !important;width:100% !important;}
+  #globalQuarterly{grid-column:1 / -1 !important;grid-row:3 !important;position:static !important;left:auto !important;width:100% !important;max-width:none !important;margin:6px 0 0 !important;}
+  #globalQuarterly[hidden]{display:none !important;}
+  #funding .field>.legend,
+  #globalApprovalDetails>.field>label{min-height:31px;white-space:normal;line-height:1.2;}
+  #funding .radio{flex-wrap:nowrap;gap:10px;}
+  #funding .radio label{padding:4px 10px;}
+}
+
+#funding .qgrid{width:100%;table-layout:fixed;}
+#funding .qgrid th:first-child,
+#funding .qgrid td:first-child{width:25%;}
+#funding .qgrid input{width:100%;min-width:0;}
+
+@media(min-width:1000px){
+  .head{max-width:1480px;padding-left:22px;padding-right:22px;}
+}
+
+@media(min-width:1000px){
+  #globalApprovalDetails{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    grid-column:1 / -1 !important;
+    grid-row:2 !important;
+    gap:10px 16px !important;
+    align-items:start;
+    margin-top:8px !important;
+    padding-top:10px;
+    border-top:1px solid var(--line);
+  }
+  #globalApprovalDetails>.field:nth-child(1),
+  #globalApprovalDetails>.field:nth-child(2){
+    grid-column:auto !important;
+    grid-row:auto !important;
+    min-width:0 !important;
+  }
+  #globalApprovalDetails>.field>label{min-height:31px;}
+  #globalApprovalDetails>.field>input,
+  #globalApprovalDetails>.field>.upload{
+    height:34px;
+    min-height:34px;
+    box-sizing:border-box;
+  }
+  #globalApprovalDetails>.field>.upload{
+    display:flex;
+    align-items:center;
+    padding:4px 8px;
+  }
+  #globalApprovalDetails>.field>.upload input[type=file]{height:24px;padding:0;}
+}
+
+@media(min-width:1000px){
+  #case>.sectionbody>.grid>.field.full.leadership-approval{
+    grid-column:1 / -1 !important;
+    grid-row:2 !important;
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:10px 16px !important;
+    align-items:start;
+    margin-top:5px !important;
+    padding-top:8px;
+    border-top:1px solid var(--line);
+  }
+  #leadershipApprovalDetails{
+    display:contents !important;
+  }
+  #leadershipApprovalDetails>.field:nth-child(1){grid-column:1 !important;grid-row:1 !important;min-width:0;}
+  #leadershipApprovalDetails>.field:nth-child(2){grid-column:2 !important;grid-row:1 !important;min-width:0;}
+  #contentAgreementField{grid-column:3 !important;grid-row:1 !important;min-width:0;}
+  #contentAgreementField .legend{min-height:31px;line-height:1.2;}
+  #contentAgreementField .radio{gap:8px;}
+  #contentAgreementField .radio label{padding:4px 10px;}
+  #leadershipApprovalDetails>.field>label{
+    min-height:31px;
+  }
+  #leadershipApprovalDetails>.field>input,
+  #leadershipApprovalDetails>.field>.upload{
+    height:34px;
+    min-height:34px;
+    box-sizing:border-box;
+  }
+  #leadershipApprovalDetails>.field>.upload{
+    display:flex;
+    align-items:center;
+    padding:4px 8px;
+  }
+  #leadershipApprovalDetails>.field>.upload input[type=file]{height:24px;padding:0;}
+}
+
+@media(min-width:1000px){
+  #funding>.sectionbody>.grid>.field:nth-child(1){grid-column:1 !important;grid-row:1 !important;}
+  #funding>.sectionbody>.grid>.field:nth-child(2){grid-column:2 !important;grid-row:1 !important;}
+  #funding>.sectionbody>.grid>.field:nth-child(3){grid-column:1 / -1 !important;grid-row:2 !important;}
+  #funding>.sectionbody>.grid>fieldset.field.full{grid-column:1 !important;grid-row:3 !important;}
+  #globalRows>.grid>fieldset.field.full{grid-column:2 !important;grid-row:3 !important;}
+  #globalApprovalDetails{grid-column:1 / -1 !important;grid-row:4 !important;}
+  #globalQuarterly{grid-column:1 / -1 !important;grid-row:5 !important;}
+  #funding>.sectionbody>.grid>.field.full:last-child{grid-column:1 / -1 !important;grid-row:6 !important;}
+}
+
+#funding>.sectionbody>.grid>.funding-columns{
+  grid-column:1 / -1 !important;
+  grid-row:auto !important;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+  width:100%;
+  align-items:start;
+}
+#funding .funding-left,#funding .funding-right{min-width:0}
+#funding .funding-left>.grid{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:10px 16px;
+  align-items:start;
+}
+#funding .funding-left>.grid>.field.full{grid-column:1 / -1 !important}
+#funding .funding-right>.grid{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:10px 16px;
+  align-items:start;
+}
+#funding .funding-right>.grid>fieldset.field.full{grid-column:1 !important;grid-row:1 !important}
+#funding #globalRows{display:contents !important}
+#funding #globalRows[hidden]{display:none !important}
+#funding #globalRows>.grid{display:contents !important}
+#funding #globalRows>.grid>fieldset.field.full{
+  grid-column:2 !important;
+  grid-row:1 !important;
+  width:auto !important;
+  min-width:0 !important;
+}
+#funding #globalApprovalDetails{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  grid-column:1 / -1 !important;
+  grid-row:2 !important;
+  gap:10px 16px !important;
+  min-width:0;
+  margin-top:8px !important;
+  padding-top:10px;
+  border-top:1px solid var(--line);
+}
+#funding #globalApprovalDetails[hidden]{display:none !important}
+#funding #globalQuarterly{
+  grid-column:1 / -1 !important;
+  grid-row:auto !important;
+  width:100% !important;
+  margin:8px 0 0 !important;
+}
+#funding>.sectionbody>.grid>.field.full:last-child{grid-column:1 / -1 !important;grid-row:auto !important}
+
+@media(max-width:999px){
+  #funding>.sectionbody>.grid>.funding-columns{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  #funding .funding-left>.grid,
+  #funding .funding-right>.grid{grid-template-columns:1fr !important}
+  #funding .funding-right>.grid>fieldset.field.full,
+  #funding #globalRows>.grid>fieldset.field.full{grid-column:1 !important;grid-row:auto !important}
+  #funding #globalApprovalDetails{grid-template-columns:1fr !important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#form">Skip to form</a>
+
+<header>
+  <div class="brandbar"></div>
+  <div class="head">
+    <div>
+      <div class="wordmark"><i></i>EY | MENA</div>
+      <h1>FY27 event funding</h1>
+      <p class="subtitle">Complete all required fields and submit for regional review. Approval email must be attached as an email file or PDF.</p>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <div hidden aria-hidden="true"><strong id="displayDate"></strong><span id="progressBar"></span><span id="progressText"></span><span id="sidebarTotalCurrency">USD</span><span id="sidebarTotalAmount">0.00</span></div>
+  <main id="form">
+    
+
+    <form id="fundingForm" novalidate>
+      <input id="date" name="date" type="hidden">
+
+      <!-- ================= SECTION 1 : OVERVIEW ================= -->
+      <section class="section" id="overview">
+        <h2><i>01</i> Overview</h2>
+        <div class="sectionbody">
+          <div class="grid">
+
+            <div class="field">
+              <label for="requestor">Submitted by</label>
+              <input id="requestor" name="requestor" autocomplete="name" placeholder="Rakesh Namboothiri T P" disabled>
+              <!-- <p class="hint">Restricted to partners in production.</p> -->
+            </div>
+
+            <div class="field">
+              <label for="eventName">Event name <span class="req">*</span></label>
+              <input id="eventName" name="eventName" required maxlength="150" placeholder="Enter the event or initiative name">
+            </div>
+
+            <div class="field">
+              <label for="requestorName">Requesting partner<span class="req">*</span></label>
+              <input id="requestorName" name="requestorName" type="text" required autocomplete="name" placeholder="Enter email or name">
+            </div>
+
+           
+            <div class="field">
+              <label for="jurisdiction">Jurisdiction <span class="req">*</span></label>
+              <select id="jurisdiction" name="jurisdiction" required>
+                <option value="">Select jurisdiction</option>
+                <option selected>MENA</option>
+                <option>Algeria</option><option>Bahrain</option><option>Egypt</option><option>Iraq</option>
+                <option>Jordan</option><option>Kuwait</option><option>Lebanon</option><option>Libya</option>
+                <option>Morocco</option><option>Oman</option><option>Palestine</option><option>Qatar</option>
+                <option>Saudi Arabia</option><option>Tunisia</option><option>T&uuml;rkiye</option>
+                <option>United Arab Emirates</option><option>Yemen</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="serviceLine">Service Line/Sector <span class="req">*</span></label>
+              <select id="serviceLine" name="serviceLine" required>
+                <option value="">Select service line/sector</option>
+                <option>Assurance</option>
+                <option>Consulting</option>
+                <option>Tax</option>
+                <option>EY-P</option>
+                <option>Energy &amp; Industrials</option>
+                <option>Financial Services</option>
+                <option>Government and Infrastructure</option>
+                <option>Alliances</option>
+              </select>
+            </div>
+
+             <div class="field">
+              <label for="account">Account name <span class="opt">(optional)</span></label>
+              <div class="multi-select" id="accountPicker">
+                <button type="button" class="multi-select-trigger" id="accountTrigger" aria-expanded="false" aria-controls="accountOptions">
+                  <span class="multi-select-value placeholder" id="accountSelection">Choose super accounts</span>
+                  <span class="multi-select-chevron" aria-hidden="true">&#9662;</span>
+                </button>
+                <div class="multi-select-panel" id="accountOptions" role="group" aria-label="Super accounts" hidden>
+                  <label class="multi-select-option"><input type="checkbox" name="account" value="Microsoft"><span>Microsoft</span></label>
+                  <label class="multi-select-option"><input type="checkbox" name="account" value="Google"><span>Google</span></label>
+                  <label class="multi-select-option"><input type="checkbox" name="account" value="Oracle"><span>Oracle</span></label>
+                  <label class="multi-select-option"><input type="checkbox" name="account" value="SAP"><span>SAP</span></label>
+                  <div class="multi-select-footer">
+                    <span id="accountCount">0 selected</span>
+                    <button type="button" class="multi-select-clear" id="accountClear" disabled>Clear</button>
+                  </div>
+                </div>
+              </div>
+             
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+        <!-- ================= SECTION 2 : FUNDING ================= -->
+        <section class="section" id="funding">
+          <h2><i>02</i> Funding requirement</h2>
+          <div class="sectionbody">
+            <div class="grid">
+              <div class="funding-columns">
+                <div class="funding-left">
+                  <div class="grid">
+
+                    <div class="field">
+                      <label for="currency">Currency <span class="req">*</span></label>
+                      <select id="currency" name="currency" required>
+                        <option value="USD">USD</option><option value="AED">AED</option><option value="SAR">SAR</option>
+                        <option value="QAR">QAR</option><option value="BHD">BHD</option><option value="KWD">KWD</option>
+                        <option value="OMR">OMR</option><option value="EGP">EGP</option><option value="JOD">JOD</option>
+                        <option value="EUR">EUR</option><option value="GBP">GBP</option>
+                      </select>
+                    </div>
+
+                    <div class="field">
+                      <label for="total">Total amount required </label>
+                      <div style="position:relative">
+                        <span id="currencyTag" style="position:absolute;left:12px;top:6px;font-weight:800;font-size:12px;color:var(--muted)">USD</span>
+                        <input id="total" name="total" type="number" min="0" step="0.01" required readonly
+                               style="padding-left:52px" aria-describedby="totalHint">
+                      </div>
+                      <p class="hint" id="totalHint">Calculated automatically from Global and MENA quarterly funding.</p>
+                    </div>
+
+                    <div class="field full">
+                      <div class="field-label">
+                        <label for="purpose">Purpose of funding <span class="req">*</span></label>
+                        <button class="description-icon" type="button" aria-label="Purpose of funding description" data-tooltip="What are we funding? Outline how the requested funding will be used, including specific activities or costs such as sponsorship fees, passes, speaking opportunities, co-branded content or exhibition space.">i</button>
+                      </div>
+                      <textarea id="purpose" name="purpose" required maxlength="1500" placeholder="Describe the purpose of the funding."></textarea>
+                      <div class="charcount"><span data-count="purpose">0</span>/1500</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="funding-right">
+                  <div class="grid">
+                    <fieldset class="field full">
+                      <span class="legend">Is the event co-funded with Global? <span class="req">*</span></span>
+                      <div class="radio">
+                        <label><input type="radio" name="cofunded" value="yes" required> Yes</label>
+                        <label><input type="radio" name="cofunded" value="no"> No</label>
+                      </div>
+                    </fieldset>
+
+                    <!-- conditional global approval fields -->
+                    <div class="full" id="globalRows" hidden>
+                      <div class="grid">
+                        <fieldset class="field full">
+                          <span class="legend">Approved by Global leader? <span class="req">*</span></span>
+                          <div class="radio">
+                            <label><input type="radio" name="globalApproved" value="yes"> Yes</label>
+                            <label><input type="radio" name="globalApproved" value="no"> No</label>
+                          </div>
+                        </fieldset>
+                        <div class="full grid" id="globalApprovalDetails" hidden>
+                          <div class="field">
+                            <label for="globalLeader">Global leader name <span class="req">*</span></label>
+                            <input id="globalLeader" name="globalLeader" placeholder="Search or enter partner name">
+                          </div>
+                          <div class="field">
+                            <label for="globalMail">Global approval email <span class="opt">(optional)</span></label>
+                            <div class="upload"><input id="globalMail" name="globalMail" type="file" accept=".msg,.eml,.pdf"></div>
+                            <p class="hint">Accepted: MSG, EML or PDF.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field full" id="globalQuarterly" hidden>
+                <table class="qgrid">
+                  <thead>
+                    <tr><th class="lh">Global funding required by quarter</th><th>FY27 Q1</th><th>FY27 Q2</th><th>FY27 Q3</th><th>FY27 Q4</th><th>Total</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="rown">Amount from Global</td>
+                      <td><input class="amount globalAmt" type="number" min="0" step="0.01" name="globalAmtQ1" aria-label="Global funding FY27 Q1"></td>
+                      <td><input class="amount globalAmt" type="number" min="0" step="0.01" name="globalAmtQ2" aria-label="Global funding FY27 Q2"></td>
+                      <td><input class="amount globalAmt" type="number" min="0" step="0.01" name="globalAmtQ3" aria-label="Global funding FY27 Q3"></td>
+                      <td><input class="amount globalAmt" type="number" min="0" step="0.01" name="globalAmtQ4" aria-label="Global funding FY27 Q4"></td>
+                      <td class="rowtotal" id="globalTotal">0.00</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="hint">Enter 0 where no funding is expected.</p>
+              </div>
+
+              <div class="field full">
+                <table class="qgrid">
+                  <thead>
+                    <tr><th class="lh">MENA  funding required by quarter</th><th>FY27 Q1</th><th>FY27 Q2</th><th>FY27 Q3</th><th>FY27 Q4</th><th>Total</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="rown">Amount from MENA</td>
+                      <td><input class="amount menaAmt" type="number" min="0" step="0.01" name="menaAmtQ1" aria-label="MENA service line FY27 Q1" required></td>
+                      <td><input class="amount menaAmt" type="number" min="0" step="0.01" name="menaAmtQ2" aria-label="MENA service line FY27 Q2" required></td>
+                      <td><input class="amount menaAmt" type="number" min="0" step="0.01" name="menaAmtQ3" aria-label="MENA service line FY27 Q3" required></td>
+                      <td><input class="amount menaAmt" type="number" min="0" step="0.01" name="menaAmtQ4" aria-label="MENA service line FY27 Q4" required></td>
+                      <td class="rowtotal" id="menaTotal">0.00</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="hint">All four quarters are required. Enter 0 where no matched funding is expected.</p>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION 3 : BUSINESS CASE ================= -->
+        <section class="section" id="case">
+          <h2><i>03</i> Business case</h2>
+          <div class="sectionbody">
+            <div class="grid">
+              <div class="field full">
+                <div class="field-label">
+                  <label for="summary">Business case summary <span class="req">*</span></label>
+                  <button class="description-icon" type="button" aria-label="Business case summary description" data-tooltip="Why is this opportunity strategically worthwhile? Summarize the opportunity, target audience, scope and business rationale for supporting the event.">i</button>
+                </div>
+                <textarea id="summary" name="summary" required maxlength="2500" placeholder="Summarize the strategic business case."></textarea>
+                <div class="charcount"><span data-count="summary">0</span>/2500</div>
+              </div>
+              <div class="field full">
+                <div class="field-label">
+                  <label for="roi">Expected ROI and impact <span class="req">*</span></label>
+                  <button class="description-icon" type="button" aria-label="Expected ROI and impact description" data-tooltip="What value will the investment deliver? Describe the expected impact on relationships, pipeline, capabilities and commercial outcomes, including the specific accounts and opportunities the investment will support.">i</button>
+                </div>
+                <textarea id="roi" name="roi" required maxlength="2500" placeholder="Describe expected value and impact."></textarea>
+                <div class="charcount"><span data-count="roi">0</span>/2500</div>
+              </div>
+              <div class="field full">
+                <div class="field-label">
+                  <label for="scale">Approach for taking outcomes or solutions to other accounts, including account names <span class="req">*</span></label>
+                  <button class="description-icon" type="button" aria-label="Scaling approach description" data-tooltip="How can the value be extended or scaled? Explain how the outcomes or solutions can be reused, scaled or transferred to other accounts, including specific target account names.">i</button>
+                </div>
+                <textarea id="scale" name="scale" required maxlength="2500" placeholder="Explain how outcomes can scale to other accounts."></textarea>
+                <div class="charcount"><span data-count="scale">0</span>/2500</div>
+              </div>
+              <div class="field full leadership-approval">
+               
+                <div class="grid" id="leadershipApprovalDetails">
+                <div class="field">
+                  <label for="leadershipApproverName">Approved leader name <span class="req">*</span></label>
+                  <input id="leadershipApproverName" name="leadershipApproverName" required placeholder="Enter leader name">
+                </div>
+                <div class="field">
+                  <label for="leadershipApprovalEvidence">Approval email <span class="opt">(optional)</span></label>
+                  <div class="upload"><input id="leadershipApprovalEvidence" name="leadershipApprovalEvidence" type="file" accept=".msg,.eml,.pdf"></div>
+                  <p class="hint">Accepted: MSG, EML or PDF.</p>
+                </div>
+                </div>
+                <fieldset class="field content-agreement" id="contentAgreementField">
+                  <legend class="legend">Prior to submitting the business case, has the engagement team agreed to create content to support the event? <span class="req">*</span></legend>
+                  <div class="radio">
+                    <label><input type="radio" name="contentAgreement" value="yes" required> Yes</label>
+                    <label><input type="radio" name="contentAgreement" value="no"> No</label>
+                  </div>
+                </fieldset>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION 4 : APPROVAL ================= -->
+        <section class="section" id="approval" hidden>
+          <h2><i>04</i> Regional approval</h2>
+          <div class="sectionbody">
+            <p class="hint" style="margin:0 0 14px">Workflow-controlled fields. These are read-only for the applicant.</p>
+            <div class="approvals">
+              <div class="approval">
+                <div><strong>BMC Leader review</strong><span class="hint">Rianna, Maya &ndash; approver selected automatically by workflow.</span></div>
+                <span class="status">Pending</span>
+              </div>
+              <div class="approval">
+                <div><strong>MENA IG Leader approval</strong>
+                  <label class="hint" for="igLeader">Reviewer name</label>
+                  <input id="igLeader" name="igLeader" type="text" maxlength="120"
+                         placeholder="Enter reviewer name" autocomplete="off">
+                </div>
+                <span class="status">Pending</span>
+              </div>
+              <div class="approval">
+                <div><strong>MENA C&amp;I Leader approval</strong>
+                  <label class="hint" for="ciLeader">Reviewer name</label>
+                  <input id="ciLeader" name="ciLeader" type="text" maxlength="120"
+                         placeholder="Enter reviewer name" autocomplete="off">
+                </div>
+                <span class="status">Pending</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="actions">
+          <button class="btn" type="button" id="clearBtn">Clear fields</button>
+          <button class="btn primary" type="submit" id="submitBtn">Submit</button>
+        </div>
+    </form>
+  </main>
+</div>
+
+<!-- ============ RESULT MODAL (success / error) ============ -->
+<div class="overlay" id="resultOverlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle" aria-describedby="resultMsg">
+  <div class="modal" id="resultModal">
+    <button type="button" class="mclose" id="resultClose" aria-label="Close dialog">&times;</button>
+    <div class="ic" id="resultIcon">&#10003;</div>
+    <h3 id="resultTitle">Application submitted</h3>
+    <p id="resultMsg">Your application has been sent successfully and is waiting for approval.</p>
+    <ul id="resultList" hidden></ul>
+    <div class="mfoot">
+      <button type="button" class="btn mbtn" id="resultOk">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var form     = document.getElementById('fundingForm');
+  var currency = document.getElementById('currency');
+
+  /* ---------- TODAY'S DATE ---------- */
+  var now = new Date();
+  var pad = function(n){ return String(n).padStart(2,'0'); };
+  document.getElementById('date').value = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+  document.getElementById('displayDate').textContent =
+    new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}).format(now);
+
+  /* ---------- HELPERS ---------- */
+  function fmt(n){ return Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  /* ---------- ACCOUNT MULTI-SELECT ---------- */
+  var accountPicker = document.getElementById('accountPicker');
+  var accountTrigger = document.getElementById('accountTrigger');
+  var accountOptions = document.getElementById('accountOptions');
+  var accountSelection = document.getElementById('accountSelection');
+  var accountCount = document.getElementById('accountCount');
+  var accountClear = document.getElementById('accountClear');
+  function syncAccountPicker(){
+    var selected = Array.prototype.slice.call(accountPicker.querySelectorAll('input[name="account"]:checked'));
+    accountSelection.textContent = selected.length ? selected.map(function(input){ return input.value; }).join(', ') : 'Choose super accounts';
+    accountSelection.classList.toggle('placeholder', selected.length === 0);
+    accountCount.textContent = selected.length + (selected.length === 1 ? ' account selected' : ' accounts selected');
+    accountClear.disabled = selected.length === 0;
+  }
+  function closeAccountPicker(){
+    accountPicker.classList.remove('open');
+    accountOptions.hidden = true;
+    accountTrigger.setAttribute('aria-expanded','false');
+  }
+  accountTrigger.addEventListener('click', function(){
+    var open = accountOptions.hidden;
+    accountOptions.hidden = !open;
+    accountPicker.classList.toggle('open', open);
+    accountTrigger.setAttribute('aria-expanded', String(open));
+  });
+  accountPicker.querySelectorAll('input[name="account"]').forEach(function(input){
+    input.addEventListener('change', syncAccountPicker);
+  });
+  accountClear.addEventListener('click', function(){
+    accountPicker.querySelectorAll('input[name="account"]').forEach(function(input){ input.checked = false; });
+    syncAccountPicker();
+  });
+  document.addEventListener('click', function(e){
+    if(!accountPicker.contains(e.target)){ closeAccountPicker(); }
+  });
+  form.addEventListener('reset', function(){ window.setTimeout(syncAccountPicker, 0); });
+  syncAccountPicker();
+
+  /* ---------- CALCULATED TOTAL ---------- */
+  function calc(){
+    var g = 0, m = 0;
+    document.querySelectorAll('.globalAmt').forEach(function(x){ if(!x.disabled){ g += Number(x.value) || 0; } });
+    document.querySelectorAll('.menaAmt').forEach(function(x){ m += Number(x.value) || 0; });
+    var t = g + m;
+    document.getElementById('total').value = t.toFixed(2);
+    document.getElementById('globalTotal').textContent = fmt(g);
+    document.getElementById('menaTotal').textContent   = fmt(m);
+    document.getElementById('sidebarTotalAmount').textContent = fmt(t);
+    updateProgress();
+  }
+
+  /* ---------- CURRENCY ---------- */
+  currency.addEventListener('change', function(){
+    var c = currency.value;
+    ['currencyTag','sidebarTotalCurrency'].forEach(function(id){
+      document.getElementById(id).textContent = c;
+    });
+  });
+
+  /* ---------- CONDITIONAL GLOBAL BLOCK ---------- */
+  var globalRows = document.getElementById('globalRows');
+  var globalApprovalDetails = document.getElementById('globalApprovalDetails');
+  var globalQuarterly = document.getElementById('globalQuarterly');
+  var cofundNote = document.getElementById('cofundNote');
+  function toggleGlobalApprovalDetails(){
+    var cofunded = document.querySelector('input[name="cofunded"]:checked');
+    var approved = document.querySelector('input[name="globalApproved"]:checked');
+    var approvalNo = document.querySelector('input[name="globalApproved"][value="no"]');
+    var show = !!cofunded && cofunded.value === 'yes' && !!approved && approved.value === 'yes';
+    globalApprovalDetails.hidden = !show;
+    globalQuarterly.hidden = !show;
+    approvalNo.setCustomValidity(approved && approved.value === 'no' ? 'Select Yes to submit.' : '');
+    globalApprovalDetails.querySelectorAll('input,select,textarea').forEach(function(f){
+      f.disabled = !show;
+      if(show && f.type !== 'file'){ f.setAttribute('required','required'); }
+      else {
+        f.removeAttribute('required');
+        if(!show){ f.value = ''; }
+      }
+    });
+    globalQuarterly.querySelectorAll('input,select,textarea').forEach(function(f){
+      f.disabled = !show;
+      if(!show){ f.value = ''; }
+    });
+    calc();
+  }
+  function toggleGlobal(){
+    var picked = document.querySelector('input[name="cofunded"]:checked');
+    var on   = !!picked && picked.value === 'yes';
+    var said = !!picked;
+    globalRows.hidden = !on;
+    globalRows.querySelectorAll('input,select,textarea').forEach(function(f){
+      f.disabled = !on;
+      if(on){ f.setAttribute('required','required'); } else { f.removeAttribute('required'); }
+      if(!on){
+        if(f.type === 'radio' || f.type === 'checkbox'){ f.checked = false; }
+        else if(f.type === 'file'){ /* leave attachments untouched */ }
+        else { f.value = ''; }
+      }
+    });
+    toggleGlobalApprovalDetails();
+    if(cofundNote){ cofundNote.hidden = !(said && !on); }
+    calc();
+  }
+  document.querySelectorAll('input[name="cofunded"]').forEach(function(r){
+    r.addEventListener('change', toggleGlobal);
+  });
+  document.querySelectorAll('input[name="globalApproved"]').forEach(function(r){
+    r.addEventListener('change', function(){
+      toggleGlobalApprovalDetails();
+      if(r.value === 'no' && r.checked){
+        openResult('error', 'Global leader approval required',
+          'You can continue only when Global leader approval is confirmed. Select Yes to continue.', [], r);
+      }
+    });
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      if(!accountOptions.hidden){ closeAccountPicker(); accountTrigger.focus(); }
+    }
+  });
+
+  /* ---------- AMOUNTS / COUNTERS ---------- */
+  document.querySelectorAll('.amount').forEach(function(x){ x.addEventListener('input', calc); });
+  document.querySelectorAll('textarea').forEach(function(t){
+    t.addEventListener('input', function(){
+      var c = document.querySelector('[data-count="' + t.id + '"]');
+      if(c){ c.textContent = t.value.length; }
+      updateProgress();
+    });
+  });
+  form.addEventListener('input', calc);
+  form.addEventListener('change', calc);
+
+  /* ---------- PROGRESS ---------- */
+  function updateProgress(){
+    var req = Array.prototype.slice.call(form.querySelectorAll('[required]'))
+              .filter(function(el){ return !el.disabled && el.offsetParent !== null; });
+    var seen = {}, list = [];
+    req.forEach(function(el){
+      var k = (el.type === 'radio') ? 'r:' + el.name : 'f:' + (el.id || el.name);
+      if(seen[k]){ return; }
+      seen[k] = 1; list.push(el);
+    });
+    var done = 0;
+    list.forEach(function(el){
+      if(el.type === 'radio'){ if(form.querySelector('input[name="' + el.name + '"]:checked')){ done++; } }
+      else if(el.type === 'file'){ if(el.files && el.files.length){ done++; } }
+      else if(el.value !== '' && el.value !== null){ done++; }
+    });
+    var pct = list.length ? Math.round(done / list.length * 100) : 0;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressText').textContent = pct + '% complete';
+  }
+
+  /* ---------- ACTIVE SECTION HIGHLIGHT ---------- */
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nav-link'));
+  function setActive(id){
+    links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#' + id); });
+  }
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ setActive(e.target.id); } });
+    }, {rootMargin:'-45% 0px -50% 0px', threshold:0});
+    links.forEach(function(a){
+      var s = document.querySelector(a.getAttribute('href'));
+      if(s){ io.observe(s); }
+    });
+  }
+
+  /* ---------- RESULT MODAL (success / error) ---------- */
+  var resultOverlay = document.getElementById('resultOverlay');
+  var resultModal   = document.getElementById('resultModal');
+  var resultList    = document.getElementById('resultList');
+  var pendingFocus  = null;
+
+  function openResult(variant, title, msg, items, focusEl){
+    resultModal.classList.remove('success', 'error');
+    resultModal.classList.add(variant);
+    document.getElementById('resultIcon').innerHTML = (variant === 'success') ? '&#10003;' : '!';
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultMsg').textContent   = msg;
+    resultList.innerHTML = '';
+    var hasItems = Array.isArray(items) ? items.length > 0 :
+      !!items && Object.keys(items).some(function(category){ return items[category].length > 0; });
+    if(hasItems){
+      if(Array.isArray(items)){
+        items.forEach(function(t){
+          var li = document.createElement('li');
+          if(t === 'The engagement team has agreed to create content to support the event'){
+            var confirmation = document.createElement('strong');
+            confirmation.textContent = t;
+            li.appendChild(confirmation);
+          } else {
+            li.textContent = t;
+          }
+          resultList.appendChild(li);
+        });
+      } else {
+        Object.keys(items).forEach(function(category){
+          if(!items[category].length){ return; }
+          var categoryItem = document.createElement('li');
+          var heading = document.createElement('strong');
+          var categoryList = document.createElement('ul');
+          heading.textContent = category;
+          categoryItem.appendChild(heading);
+          items[category].forEach(function(label){
+            var fieldItem = document.createElement('li');
+            fieldItem.textContent = label;
+            categoryList.appendChild(fieldItem);
+          });
+          categoryItem.appendChild(categoryList);
+          resultList.appendChild(categoryItem);
+        });
+      }
+      resultList.hidden = false;
+    } else {
+      resultList.hidden = true;
+    }
+    pendingFocus = focusEl || null;
+    resultOverlay.classList.add('open');
+    document.getElementById('resultOk').focus();
+  }
+  function closeResult(){
+    if(!resultOverlay.classList.contains('open')){ return; }
+    resultOverlay.classList.remove('open');
+    var target = pendingFocus;
+    pendingFocus = null;
+    if(target && typeof target.focus === 'function'){
+      var rect = target.getBoundingClientRect();
+      var scrollTop = window.scrollY + rect.top - (window.innerHeight - rect.height) / 2;
+      try{ target.focus({preventScroll:true}); }catch(err){ target.focus(); }
+      window.scrollTo({top: Math.max(0, scrollTop), behavior:'instant'});
+    }
+  }
+  document.getElementById('resultOk').addEventListener('click', closeResult);
+  document.getElementById('resultClose').addEventListener('click', closeResult);
+  resultOverlay.addEventListener('click', function(e){ if(e.target === resultOverlay){ closeResult(); } });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && resultOverlay.classList.contains('open')){ closeResult(); }
+  });
+  resultOverlay.addEventListener('keydown', function(e){
+    if(e.key !== 'Tab'){ return; }
+    var f = resultOverlay.querySelectorAll('button');
+    if(!f.length){ return; }
+    var first = f[0], last = f[f.length - 1];
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  });
+
+  function fieldLabel(el){
+    if(el.type === 'radio'){
+      var box = el.closest('.field, fieldset');
+      var leg = box ? box.querySelector('.legend') : null;
+      if(leg){
+        var label = leg.textContent.replace('*','').trim();
+        return el.name === 'globalApproved' ? label + ' (select Yes to submit)' : label;
+      }
+      return el.name;
+    }
+    if(el.type === 'file'){
+      var lf = el.labels && el.labels[0];
+      if(lf){ return lf.textContent.replace('*','').replace('(optional)','').trim(); }
+      return 'Attachment';
+    }
+    var l = el.labels && el.labels[0];
+    if(l){ return l.textContent.replace('*','').replace('(optional)','').trim(); }
+    if(el.getAttribute('aria-label')){ return el.getAttribute('aria-label'); }
+    if(el.name){ var pre = el.name.replace(/([A-Z])/g, ' $1').replace(/_/g,' ').trim(); return pre.charAt(0).toUpperCase()+pre.slice(1); }
+    return '';
+  }
+
+  /* ---------- SUBMIT ---------- */
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!form.checkValidity()){
+      var items = {
+        '01 Overview': [],
+        '02 Funding requirement': [],
+        '03 Business case': []
+      };
+      var seen = {}, firstBad = null;
+      Array.prototype.slice.call(form.querySelectorAll(':invalid')).forEach(function(el){
+        if(!el.willValidate || el.disabled || el.offsetParent === null){ return; }
+        var key = (el.type === 'radio') ? 'r:' + el.name : 'f:' + (el.id || el.name || el.className);
+        if(seen[key]){ return; }
+        seen[key] = 1;
+        if(!firstBad){ firstBad = el; }
+        var label = fieldLabel(el);
+        var section = el.closest('.section');
+        var category = section && section.id === 'overview' ? '01 Overview' :
+          section && section.id === 'funding' ? '02 Funding requirement' :
+          section && section.id === 'case' ? '03 Business case' : null;
+        if(label && category && items[category].indexOf(label) === -1){ items[category].push(label); }
+        el.classList.add('field-error');
+      });
+      var hasInvalidFields = Object.keys(items).some(function(category){ return items[category].length > 0; });
+      openResult('error', 'Application incomplete',
+        hasInvalidFields ? 'The application was not sent. Please complete the required fields listed below, then submit again.' : 'The application was not sent. Please review the highlighted required fields, then submit again.',
+        items, firstBad);
+      return;
+    }
+    form.querySelectorAll('.field-error').forEach(function(el){ el.classList.remove('field-error'); });
+    var summary = [];
+    var reqName = document.getElementById('requestorName').value.trim();
+    var evName  = document.getElementById('eventName').value.trim();
+    var leadershipName = document.getElementById('leadershipApproverName').value.trim();
+    var tot     = document.getElementById('total').value;
+    if(evName){ summary.push('Event: ' + evName); }
+    if(reqName){ summary.push('Requestor: ' + reqName); }
+    if(leadershipName){ summary.push('Leadership approver: ' + leadershipName); }
+    if(tot && Number(tot) > 0){
+      summary.push('Total funding requested: ' + currency.value + ' ' + fmt(Number(tot)));
+    }
+    var ig = document.getElementById('igLeader').value.trim();
+    var ci = document.getElementById('ciLeader').value.trim();
+    if(ig){ summary.push('MENA IG Leader approval \u2013 reviewer: ' + ig); }
+    if(ci){ summary.push('MENA C&I Leader approval \u2013 reviewer: ' + ci); }
+    var contentAgreement = document.querySelector('input[name="contentAgreement"]:checked');
+    if(contentAgreement && contentAgreement.value === 'yes'){
+      summary.push('The engagement team has agreed to create content to support the event');
+    }
+    openResult('success', 'Application submitted',
+      'Your application has been sent successfully and is waiting for approval.', summary, null);
+  });
+
+  /* ---------- CLEAR FIELDS ---------- */
+  document.getElementById('clearBtn').addEventListener('click', function(){
+    if(!confirm('Clear all fields? Every entry, attachment and calculated total in this form will be removed.')){ return; }
+    form.reset();
+    document.getElementById('date').value = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+    document.querySelectorAll('.amount').forEach(function(x){ x.value = ''; });
+    document.querySelectorAll('.charcount span').forEach(function(s){ s.textContent = '0'; });
+    if(cofundNote){ cofundNote.hidden = true; }
+    document.getElementById('total').value = '0.00';
+    toggleGlobal();
+    calc();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  /* ---------- INIT ---------- */
+  toggleGlobal();
+  calc();
+})();
+</script>
+
+</body>
+</html>
